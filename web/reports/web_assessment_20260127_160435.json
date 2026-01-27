@@ -1,0 +1,49 @@
+{
+  "session_id": "14bce149-bf3e-47b9-8408-97f5ae3ea25c",
+  "timestamp": "2026-01-27T16:04:35.330154",
+  "report": {
+    "proficiency_level": "A2-B1",
+    "ceiling_phase": "Level-Up",
+    "ceiling_analysis": "The breakdown occurred during the Level-Up phase, where the student struggled with more complex narrative structures.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 3,
+        "observation": "The student responds promptly to warm-up questions but shows hesitancy when asked to elaborate.",
+        "evidence": "\"골프를 치면서 가장 어려웠던 순간이나 기억에 남는 경험이 있다면, 그 이야기 좀 들려줄 수 있어요?\""
+      },
+      {
+        "domain": "Grammar",
+        "rating": 3,
+        "observation": "The student demonstrates some control over simple past tense but lacks the ability to use complex structures.",
+        "evidence": "\"골프는 우리나라에서 배우고 싶어서 20년 정도 했어요.\""
+      },
+      {
+        "domain": "Lexical",
+        "rating": 3,
+        "observation": "The vocabulary is appropriate for basic conversations but lacks specificity in more complex descriptions.",
+        "evidence": "\"한강 정말 아름다워요.\""
+      },
+      {
+        "domain": "Phonology",
+        "rating": 4,
+        "observation": "Generally clear pronunciation with minor native influence that doesn't hinder understanding.",
+        "evidence": "N/A"
+      },
+      {
+        "domain": "Coherence",
+        "rating": 3,
+        "observation": "The student presents ideas in a linear fashion but struggles with linking ideas coherently when prompted for depth.",
+        "evidence": "\"한강 자전거 트랙 있어요. 정말 좋아요.\""
+      }
+    ],
+    "starting_module": "Module 2 (Basic Conversation Strategies: Expanding responses)",
+    "logic_errors_to_debug": [
+      "Lack of complex sentence structures (e.g., relative clauses).",
+      "Insufficient specificity in vocabulary choices."
+    ],
+    "optimization_strategy": "Shadowing exercise focusing on past tense narratives and linking phrases to enhance coherence and fluency in storytelling."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A2-B1 level. You performed well during the Level-Up phase. The breakdown occurred during the Level-Up phase, where the student struggled with more complex narrative structures. \nLet me break down the key areas: Your strongest area is phonology with a rating of 4 out of 5. Generally clear pronunciation with minor native influence that doesn't hinder understanding. An area to focus on is coherence, rated at 3 out of 5. The student presents ideas in a linear fashion but struggles with linking ideas coherently when prompted for depth. \nI recommend starting with the Module 2 (Basic Conversation Strategies: Expanding responses) module. The top patterns to work on are: 1. Lack of complex sentence structures (e.g., relative clauses). 2. Insufficient specificity in vocabulary choices. \nFor practice, I suggest this exercise: Shadowing exercise focusing on past tense narratives and linking phrases to enhance coherence and fluency in storytelling. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 11
+}

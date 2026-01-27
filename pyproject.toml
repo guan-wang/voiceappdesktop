@@ -1,0 +1,46 @@
+[project]
+name = "korean-voice-tutor"
+version = "2.0.0"
+description = "Korean Voice Tutor - Complete Package (Desktop + Web)"
+requires-python = ">=3.9"
+dependencies = [
+    # Core dependencies
+    "openai>=1.102.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "websockets>=12.0,<14.0",
+    
+    # Desktop dependencies
+    "pyaudio>=0.2.14",
+    
+    # Web dependencies
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+]
+
+[project.optional-dependencies]
+desktop = [
+    "pyaudio>=0.2.14",
+]
+web = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+]
+core = [
+    "openai>=1.102.0",
+    "pydantic>=2.0.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.24.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+]
+
+[tool.uv.workspace]
+members = ["core", "desktop", "web/backend"]

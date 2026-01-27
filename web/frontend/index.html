@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Korean Voice Tutor</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🇰🇷 Korean Voice Tutor</h1>
+            <div class="status" id="status">
+                <span class="status-dot"></span>
+                <span class="status-text">Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Transcript Area -->
+        <div class="transcript-container" id="transcriptContainer">
+            <div class="transcript-welcome">
+                <p>Welcome! Hold the button below to speak in Korean.</p>
+                <p class="transcript-hint">Your conversation will appear here.</p>
+            </div>
+        </div>
+
+        <!-- Push-to-Talk Button -->
+        <div class="ptt-container">
+            <button 
+                id="pttButton" 
+                class="ptt-button" 
+                disabled
+                aria-label="Hold to speak"
+            >
+                <div class="ptt-icon">🎤</div>
+                <div class="ptt-text">Hold to Speak</div>
+            </button>
+            <div class="ptt-hint" id="pttHint">
+                Connecting to server...
+            </div>
+        </div>
+
+        <!-- Audio Player (hidden, for AI responses) -->
+        <audio id="audioPlayer" style="display: none;"></audio>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/audio.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>

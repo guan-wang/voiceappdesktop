@@ -1,0 +1,40 @@
+📱 ENABLE MICROPHONE ON YOUR PHONE - QUICK GUIDE
+================================================
+
+THE PROBLEM:
+Mobile browsers block microphone access over HTTP.
+You need HTTPS (even for local testing).
+
+THE SOLUTION (3 Steps):
+=======================
+
+1️⃣ GENERATE SSL CERTIFICATE
+   Run this in PowerShell:
+
+   cd C:\Users\Guan\Projects\agents\korean_voice_tutor\web\backend
+   .\setup_https_python.ps1
+
+   This creates cert.pem and key.pem files.
+
+2️⃣ RESTART SERVER
+   
+   .\stop_server.ps1
+   .\start_server.ps1
+
+   You should see: "🔒 HTTPS enabled"
+
+3️⃣ ACCESS FROM PHONE WITH HTTPS
+
+   Use HTTPS (note the 's'):
+   https://192.168.45.151:7860
+
+   You'll see a security warning - this is NORMAL for self-signed certs.
+   
+   On iOS: Tap "Show Details" → "visit this website"
+   On Android: Tap "Advanced" → "Proceed to ... (unsafe)"
+
+THAT'S IT! 🎉
+The microphone permission prompt should now appear on your phone!
+
+---
+For detailed guide, see: HTTPS_SETUP.md

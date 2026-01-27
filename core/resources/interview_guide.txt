@@ -1,0 +1,70 @@
+SEMI-STRUCTURED ORAL INTERVIEW (SSOI) ASSESSMENT GUIDELINE
+
+1. INTERVIEW PHILOSOPHY AND GOALS
+The SSOI is a "stress test" for language skills. The goal is to move from "Usage" (knowledge of rules) to "Use" (real-time communication). The interviewer must start easy, push until the learner struggles to find their "Linguistic Ceiling," then end on a positive note.
+
+2. THE FOUR-PHASE INTERVIEW FLOW
+Phase 1: The Warm-up (Mandatory)
+- Goal: Lower the learner's stress and establish a baseline.
+- Rule: Use "baby-simple" language; no idioms or complex syntax.
+- Mandatory Questions: 
+    1. "What is your name?" 
+    2. "Where is your hometown? Tell me about it." 
+    3. "What are your hobbies?" or "What do you do for fun?"
+- Time: 1 minute.
+
+Phase 2: The Level Check
+- Goal: See if the learner handles basics of their suspected level.
+- Strategy: Ask open-ended questions matching their level. Use language that matches their level (e.g., don't ask about socio-economic implications to a beginner).
+- Time: 2 mins (B1 and below) or 3-4 mins (B2 and above).
+
+Phase 3: Pushing to the Limit (The Ceiling Test)
+- Goal: Find the "Break Point" where grammar or vocabulary fails.
+- Strategy: Gradually increase difficulty and use "big words" to test comprehension. Stop when they clearly cannot find words or grammar falls apart.
+- Time: 1-2 mins (B1 and below) or 3-4 mins (B2 and above).
+
+Phase 4: Ending the Interview
+- Goal: End on a positive note so the learner feels good.
+- Strategy: Ask one last very easy question about their weekend or a friendly closing.
+- Time: 30-60 seconds.
+
+3. TIMING AND DURATION RULES
+- B1 Level and Below: Max 5 minutes total.
+- B2 Level and Above: 8-10 minutes total.
+
+4. GRADING CRITERIA BY LEVEL (CEFR)
+A1-A2 (Beginner):
+- Fluency: Very slow with long pauses.
+- Vocabulary: Only knows basic words (family, food, shopping).
+- Grammar: Makes lots of mistakes even in simple sentences.
+- Interaction: Can only answer; cannot really "chat".
+
+B1-B2 (Intermediate):
+- Fluency: Generally smooth; B2 has very few pauses.
+- Vocabulary: Can talk about most topics and some slang.
+- Grammar: Good at simple stuff; B2 handles hard grammar well.
+- Interaction: Can start and finish a conversation easily.
+
+C1-C2 (Advanced):
+- Fluency: Fast and natural.
+- Vocabulary: Knows almost every word, including deep or technical ones.
+- Grammar: Very few mistakes; sounds like a native.
+- Interaction: Can talk about anything (science, politics, feelings).
+
+5. SPOTTING THE "BREAK POINT"
+Indicators that the learner has reached their limit:
+- Reverting to their native language because they forgot a word.
+- Using "baby-ish" sentences (e.g., "Me go store").
+- Looking highly stressed or stopping talking entirely.
+
+6. BEST PRACTICES FOR THE ASSESSMENT AGENT
+- The Simplicity First Rule: NEVER use a difficult word when a simple one works. Use "Start" instead of "Commence."
+- Coding Analogy: Don't use a Double when an Int is all you need. Keep the overhead low.
+- The 5-Second Rule: Wait 5 seconds for a response before helping. They might just be thinking.
+- No Correction: Do not correct the learner; if they make a mistake, keep going.
+- Recovery: If they don't understand, ask the same question using even easier words. If they still don't get it, go back to an easier topic.
+
+7. QUESTION BANK
+- Beginner (A1-A2): "Where do you live?", "Tell me about your family," "What did you do yesterday?".
+- Intermediate (B1-B2): "Tell me about a vacation you liked," "Is it better to work from home or in an office?", "If you won a lot of money tomorrow, what would you do?".
+- Advanced (C1-C2): "How is social media changing how people talk?", "If you were the leader of your country, what would you change?", "Is it more important to protect nature or make money?".
