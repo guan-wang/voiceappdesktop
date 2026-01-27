@@ -1,0 +1,49 @@
+{
+  "session_id": "179784aa-e08f-4a6e-80e6-3ea732c1e6aa",
+  "timestamp": "2026-01-26T18:53:07.631670",
+  "report": {
+    "proficiency_level": "A2",
+    "ceiling_phase": "Level-Up",
+    "ceiling_analysis": "The breakdown occurred during the Level-Up phase, specifically when asked to describe a recent enjoyable experience.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 3,
+        "observation": "The student demonstrated moderate fluency but struggled with longer responses. Frequent hesitations were present.",
+        "evidence": "\"어... 저는... 어...\""
+      },
+      {
+        "domain": "Grammar",
+        "rating": 3,
+        "observation": "The student used basic grammatical structures. Encountered challenges with complex ideas during Level-Up.",
+        "evidence": "\"경험이 뭐예요?\""
+      },
+      {
+        "domain": "Lexical",
+        "rating": 3,
+        "observation": "The student utilized basic vocabulary related to hobbies but lacked terminology for more complex expressions.",
+        "evidence": "\"제 취미는 수영, 자전거, 스케이팅을 하고 있어요.\""
+      },
+      {
+        "domain": "Phonology",
+        "rating": 4,
+        "observation": "Pronunciation is clear, with minor issues that do not impede communication.",
+        "evidence": "Not needed for evidence; general observation."
+      },
+      {
+        "domain": "Coherence",
+        "rating": 2,
+        "observation": "The student struggled to organize thoughts when asked for a detailed experience. This led to confusion.",
+        "evidence": "\"아, 네.\" (unable to expand on the prompt)"
+      }
+    ],
+    "starting_module": "Module focused on narrative skills and vocabulary expansion (e.g., descriptors for activities).",
+    "logic_errors_to_debug": [
+      "Difficulty in responding to descriptive prompts (e.g., providing details of an experience).",
+      "Hesitation that disrupts conversational flow (e.g., waiting too long before speaking)."
+    ],
+    "optimization_strategy": "Shadowing exercises focusing on response techniques for narrative prompts can help improve fluency and build confidence in descriptions."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A2 level. You performed well during the Level-Up phase. The breakdown occurred during the Level-Up phase, specifically when asked to describe a recent enjoyable experience. \nLet me break down the key areas: Your strongest area is phonology with a rating of 4 out of 5. Pronunciation is clear, with minor issues that do not impede communication. An area to focus on is coherence, rated at 2 out of 5. The student struggled to organize thoughts when asked for a detailed experience. This led to confusion. \nI recommend starting with the Module focused on narrative skills and vocabulary expansion (e.g., descriptors for activities). module. The top patterns to work on are: 1. Difficulty in responding to descriptive prompts (e.g., providing details of an experience). 2. Hesitation that disrupts conversational flow (e.g., waiting too long before speaking). \nFor practice, I suggest this exercise: Shadowing exercises focusing on response techniques for narrative prompts can help improve fluency and build confidence in descriptions. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 18
+}

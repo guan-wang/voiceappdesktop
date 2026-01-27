@@ -1,0 +1,49 @@
+{
+  "session_id": "68b1e26a-1924-4b40-bb63-ce71ae443a27",
+  "timestamp": "2026-01-26T15:35:39.032252",
+  "report": {
+    "proficiency_level": "A1",
+    "ceiling_phase": "Level-up",
+    "ceiling_analysis": "The breakdown occurred during the Level-up phase, where the student struggled with more complex questions requiring personal narrative and descriptive tasks.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 2,
+        "observation": "The student experiences frequent pauses and hesitations, indicating discomfort with the flow of conversation.",
+        "evidence": "\"아, 몰라요.\" (Ah, I don't know.)"
+      },
+      {
+        "domain": "Grammar",
+        "rating": 2,
+        "observation": "There are instances of incomplete sentences and lack of variety in sentence structures, limiting grammatical complexity.",
+        "evidence": "\"너무 어려워요.\" (It's too difficult.)"
+      },
+      {
+        "domain": "Lexical",
+        "rating": 2,
+        "observation": "Use of general terms with minimal specificity reflects limited vocabulary.",
+        "evidence": "\"일본 음식 정말 좋아요 너무...\" (I really like Japanese food a lot...)"
+      },
+      {
+        "domain": "Phonology",
+        "rating": 3,
+        "observation": "Pronunciation is generally clear, but some phrases lack fluency, making comprehension occasionally challenging.",
+        "evidence": "\"스시 정말 좋아요.\" (I really like sushi.)"
+      },
+      {
+        "domain": "Coherence",
+        "rating": 2,
+        "observation": "Difficulty in linking ideas or elaborating on points, leading to a struggle in maintaining coherent discourse.",
+        "evidence": "\"아 이거 진짜 어려워요.\" (Ah, this is really difficult.)"
+      }
+    ],
+    "starting_module": "Module focused on A1 basic conversational skills",
+    "logic_errors_to_debug": [
+      "Lack of Descriptive Language: The student tends to use vague descriptors. E.g., \"좋아해요\" (I like it) instead of elaborating on why—akin to using a 'Generic Data Type' without specifics in coding.",
+      "Inability to Expand on Ideas: When prompted to elaborate, the student responds minimally. This could be improved by encouraging more detailed answers, similar to avoiding 'Code Duplication' in programming by using functions for repetitive tasks."
+    ],
+    "optimization_strategy": "Implement Shadowing exercises, where the student listens to recorded conversations and repeats them, aiming to improve fluency and comfort with various expressions and vocabulary in context."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A1 level. You performed well during the Level-up phase. The breakdown occurred during the Level-up phase, where the student struggled with more complex questions requiring personal narrative and descriptive tasks. \nLet me break down the key areas: Your strongest area is phonology with a rating of 3 out of 5. Pronunciation is generally clear, but some phrases lack fluency, making comprehension occasionally challenging. An area to focus on is coherence, rated at 2 out of 5. Difficulty in linking ideas or elaborating on points, leading to a struggle in maintaining coherent discourse. \nI recommend starting with the Module focused on A1 basic conversational skills module. The top patterns to work on are: 1. Lack of Descriptive Language: The student tends to use vague descriptors. E.g., \"좋아해요\" (I like it) instead of elaborating on why—akin to using a 'Generic Data Type' without specifics in coding. 2. Inability to Expand on Ideas: When prompted to elaborate, the student responds minimally. This could be improved by encouraging more detailed answers, similar to avoiding 'Code Duplication' in programming by using functions for repetitive tasks. \nFor practice, I suggest this exercise: Implement Shadowing exercises, where the student listens to recorded conversations and repeats them, aiming to improve fluency and comfort with various expressions and vocabulary in context. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 21
+}

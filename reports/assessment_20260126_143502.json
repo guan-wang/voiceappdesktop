@@ -1,0 +1,49 @@
+{
+  "session_id": "e304d809-0a7a-46c0-beaf-265fba33c839",
+  "timestamp": "2026-01-26T14:35:02.587681",
+  "report": {
+    "proficiency_level": "A2 (Elementary)",
+    "ceiling_phase": "Level-Up",
+    "ceiling_analysis": "The breakdown occurred during the Level-Up phase, specifically when the student was asked to share details about a memorable trip and engage with the hypothetical question about receiving money.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 4,
+        "observation": "The student's fluency was generally good with little hesitation during the Warm-Up phase. They responded adequately and engaged in turn-taking.",
+        "evidence": "\"저는 왕관입니다.\" (I am Wang Kwan.)"
+      },
+      {
+        "domain": "Grammar",
+        "rating": 3,
+        "observation": "While many sentences were structured correctly, there were moments where grammatical coherence faltered, especially in complex answers.",
+        "evidence": "\"저는 스타트업 후 하고 싶어요.\" (I want to do after the startup.)"
+      },
+      {
+        "domain": "Lexical",
+        "rating": 3,
+        "observation": "The vocabulary used was mostly relevant, but at times lacked specificity. For instance, \"따뜻한 나라\" was used generically instead of specific country names.",
+        "evidence": "\"저는 따뜻한 나라 정말 좋아요.\" (I really like warm countries.)"
+      },
+      {
+        "domain": "Phonology",
+        "rating": 4,
+        "observation": "Pronunciation was clear, making it easy to understand the student. Minor regional accents did not impede communication.",
+        "evidence": "\"하얼빈은 겨울에 너무 추워요.\" (Haerbin is very cold in winter.)"
+      },
+      {
+        "domain": "Coherence",
+        "rating": 2,
+        "observation": "Coherence suffered in responses to deeper questions. The lack of logical connection made the overall narrative difficult to follow.",
+        "evidence": "\"저는 물고기 먹고 네, 좋아요.\" (I eat fish, yes, I like it.)"
+      }
+    ],
+    "starting_module": "The student should start at the A2 module focusing on practical conversation skills, including asking and answering questions related to personal experiences and preferences.",
+    "logic_errors_to_debug": [
+      "Use of future tense and clarity of intent (e.g., \"스타트업 후 하고 싶어요\" is unclear).",
+      "Lack of specificity in vocabulary (e.g., instead of \"따뜻한 나라,\" use specific country names such as \"태국\", \"베트남\" etc.)."
+    ],
+    "optimization_strategy": "Implement \"Picture Narration\" exercises to encourage descriptive language use and coherence. Students could describe images of various locations or activities to build detail and narrative skills."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A2 (Elementary) level. You performed well during the Level-Up phase. The breakdown occurred during the Level-Up phase, specifically when the student was asked to share details about a memorable trip and engage with the hypothetical question about receiving money. \nLet me break down the key areas: Your strongest area is fluency with a rating of 4 out of 5. The student's fluency was generally good with little hesitation during the Warm-Up phase. They responded adequately and engaged in turn-taking. An area to focus on is coherence, rated at 2 out of 5. Coherence suffered in responses to deeper questions. The lack of logical connection made the overall narrative difficult to follow. \nI recommend starting with the The student should start at the A2 module focusing on practical conversation skills, including asking and answering questions related to personal experiences and preferences. module. The top patterns to work on are: 1. Use of future tense and clarity of intent (e.g., \"스타트업 후 하고 싶어요\" is unclear). 2. Lack of specificity in vocabulary (e.g., instead of \"따뜻한 나라,\" use specific country names such as \"태국\", \"베트남\" etc.). \nFor practice, I suggest this exercise: Implement \"Picture Narration\" exercises to encourage descriptive language use and coherence. Students could describe images of various locations or activities to build detail and narrative skills. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 21
+}

@@ -1,0 +1,49 @@
+{
+  "session_id": "1a3d0a8e-69f8-434e-ab49-1663a935874e",
+  "timestamp": "2026-01-26T15:06:36.134270",
+  "report": {
+    "proficiency_level": "A2",
+    "ceiling_phase": "Level-Up",
+    "ceiling_analysis": "The breakdown occurred in the Level-Up phase. The student struggled to expand on their experiences effectively.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 3,
+        "observation": "The student demonstrates basic fluency with quick responses in the Warm-Up phase but hesitates when asked to elaborate in the Level-Up phase.",
+        "evidence": "\"저는 왕관입니다. 반가워요.\""
+      },
+      {
+        "domain": "Grammar",
+        "rating": 2,
+        "observation": "There were instances of structural coherence, but the student's inability to respond in varied tenses or descriptive language indicated limitations.",
+        "evidence": "\"하얼빈 중국 도시예요.\""
+      },
+      {
+        "domain": "Lexical",
+        "rating": 3,
+        "observation": "The vocabulary is relevant but lacks specificity when describing experiences. There is an over-reliance on simple vocabulary.",
+        "evidence": "\"제 취미는 수영, 자전거, 스키예요.\""
+      },
+      {
+        "domain": "Phonology",
+        "rating": 4,
+        "observation": "Pronunciation was generally clear, and the student had no significant issues with comprehensibility.",
+        "evidence": "N/A"
+      },
+      {
+        "domain": "Coherence",
+        "rating": 2,
+        "observation": "The student struggled to connect ideas effectively, especially when prompted for elaboration, leading to incomplete thoughts.",
+        "evidence": "\"겨울에 정말 추워요.\""
+      }
+    ],
+    "starting_module": "A2 Level",
+    "logic_errors_to_debug": [
+      "Expanding the usage of present continuous and past tenses in descriptions (e.g., \"I went skiing last weekend\" instead of just listing \"I ski\").",
+      "Improving coherence by incorporating connective phrases to better link ideas (e.g., \"First, I snowboard; then, I went to the hot springs.\")."
+    ],
+    "optimization_strategy": "Engage in 'Picture Narration' exercises, where the student describes images related to their hobbies, encouraging the use of past tenses and more varied vocabulary."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A2 level. You performed well during the Level-Up phase. The breakdown occurred in the Level-Up phase. The student struggled to expand on their experiences effectively. \nLet me break down the key areas: Your strongest area is phonology with a rating of 4 out of 5. Pronunciation was generally clear, and the student had no significant issues with comprehensibility. An area to focus on is coherence, rated at 2 out of 5. The student struggled to connect ideas effectively, especially when prompted for elaboration, leading to incomplete thoughts. \nI recommend starting with the A2 Level module. The top patterns to work on are: 1. Expanding the usage of present continuous and past tenses in descriptions (e.g., \"I went skiing last weekend\" instead of just listing \"I ski\"). 2. Improving coherence by incorporating connective phrases to better link ideas (e.g., \"First, I snowboard; then, I went to the hot springs.\"). \nFor practice, I suggest this exercise: Engage in 'Picture Narration' exercises, where the student describes images related to their hobbies, encouraging the use of past tenses and more varied vocabulary. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 10
+}

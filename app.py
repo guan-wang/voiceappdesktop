@@ -7,7 +7,6 @@ import os
 import asyncio
 from dotenv import load_dotenv
 from interview_agent import InterviewAgent
-from assessment_generator import AssessmentGenerator
 
 # Load environment variables
 load_dotenv()
@@ -22,39 +21,28 @@ async def main():
         print("   Example: OPENAI_API_KEY=sk-...")
         return
     
-    # Initialize components
+    # Initialize interview agent (includes integrated assessment agent)
     interview_agent = InterviewAgent()
-    assessment_generator = AssessmentGenerator()
     
     try:
-        # Run the interview
+        # Run the interview with integrated assessment
+        # Assessment is triggered automatically when linguistic ceiling is reached
         await interview_agent.run()
         
     finally:
-        # Generate assessment after interview ends
+        # Optional: Print conversation history for debugging/logging
         conversation_history = interview_agent.get_conversation_history()
         
         if conversation_history:
             print("\n" + "=" * 50)
-            print("📊 Generating Assessment...")
-            print("=" * 50 + "\n")
-            
-            assessment = assessment_generator.generate_assessment(conversation_history)
-            
-            print("=" * 50)
-            print("📋 ASSESSMENT RESULTS")
-            print("=" * 50)
-            print(assessment)
-            print("=" * 50)
-
-            print("\n" + "=" * 50)
-            print("🧾 FULL CONVERSATION HISTORY")
+            print("🧾 CONVERSATION HISTORY")
             print("=" * 50)
             for speaker, text in conversation_history:
                 print(f"{speaker}: {text}")
             print("=" * 50)
+            print("\n💡 Assessment report has been saved to the reports/ directory")
         else:
-            print("\n⚠️ No conversation recorded. Assessment skipped.")
+            print("\n⚠️ No conversation recorded.")
 
 
 if __name__ == "__main__":

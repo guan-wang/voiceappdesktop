@@ -1,0 +1,49 @@
+{
+  "session_id": "40e55446-8926-4838-9e2c-409d570d8725",
+  "timestamp": "2026-01-26T18:04:55.773470",
+  "report": {
+    "proficiency_level": "A2",
+    "ceiling_phase": "Level-up",
+    "ceiling_analysis": "The student's breakdown occurred during the Level-up phase. They struggled particularly with longer, descriptive prompts and fell back into simpler responses.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 3,
+        "observation": "The student displays some fluency in simple responses but struggles with longer answers, indicated by hesitation. For example, when asked about a funny experience, they stated, \"이거 조금 어려워요\" (This is a bit difficult), showing they were not comfortable elaborating.",
+        "evidence": "이거 조금 어려워요"
+      },
+      {
+        "domain": "Grammar",
+        "rating": 3,
+        "observation": "Generally, the student uses basic grammatical structures correctly but lacks complexity. For instance, their response lacked proper verb conjugation in past tense: \"아내 테니스도 잘 춰요\" (My wife plays tennis well), which should be \"잘 쳐요.\" This reflects a gap in verb conjugation accuracy.",
+        "evidence": "우리 아내 테니스도 잘 춰요"
+      },
+      {
+        "domain": "Lexical",
+        "rating": 3,
+        "observation": "Vocabulary usage is mostly appropriate for basic topics, but the student uses general terms where more specific ones would enhance clarity. E.g., using \"재밌는 활동\" (fun activity) instead of specifying what they find enjoyable about tennis. This use of a \"Generic Object\" can limit expressive power.",
+        "evidence": "테니스는 재밌는 활동이에요"
+      },
+      {
+        "domain": "Phonology",
+        "rating": 4,
+        "observation": "Pronunciation is generally clear, with minimal interference. The student is understandable but may need minor adjustments to enhance clarity, particularly in multisyllabic words (e.g., \"하얼빈\").",
+        "evidence": "하르빈은 밖이 너무 추워요."
+      },
+      {
+        "domain": "Coherence",
+        "rating": 3,
+        "observation": "The student can link ideas sequentially but struggles with deeper connections. Their transition from making statements to more abstract reasoning lacks logical operators that would tie experiences together more cohesively.",
+        "evidence": "테니스를 배우면 몸에도 좋고, 사람들과 교류도 할 수 있을 것 같은데..."
+      }
+    ],
+    "starting_module": "Module focusing on expanding descriptive language and narrative skills focused on past experiences and hobby descriptions.",
+    "logic_errors_to_debug": [
+      "Grammatical Tense Consistency: Encourage practice in using the correct verb forms for describing past actions (e.g., using \"쳤어요\" instead of \"치어요\").",
+      "Lexical Precision: Work on replacing generic vocabulary with more specific terms to enhance clarity (e.g., provide exercises around active sports vocabulary)."
+    ],
+    "optimization_strategy": "Implement a \"Storytelling Exercise\" where the student describes a favorite memory or experience in a structured format, encouraging the use of past tenses and linking words to improve coherence and fluency."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A2 level. You performed well during the Level-up phase. The student's breakdown occurred during the Level-up phase. They struggled particularly with longer, descriptive prompts and fell back into simpler responses. \nLet me break down the key areas: Your strongest area is phonology with a rating of 4 out of 5. Pronunciation is generally clear, with minimal interference. The student is understandable but may need minor adjustments to enhance clarity, particularly in multisyllabic words (e.g., \"하얼빈\"). An area to focus on is coherence, rated at 3 out of 5. The student can link ideas sequentially but struggles with deeper connections. Their transition from making statements to more abstract reasoning lacks logical operators that would tie experiences together more cohesively. \nI recommend starting with the Module focusing on expanding descriptive language and narrative skills focused on past experiences and hobby descriptions. module. The top patterns to work on are: 1. Grammatical Tense Consistency: Encourage practice in using the correct verb forms for describing past actions (e.g., using \"쳤어요\" instead of \"치어요\"). 2. Lexical Precision: Work on replacing generic vocabulary with more specific terms to enhance clarity (e.g., provide exercises around active sports vocabulary). \nFor practice, I suggest this exercise: Implement a \"Storytelling Exercise\" where the student describes a favorite memory or experience in a structured format, encouraging the use of past tenses and linking words to improve coherence and fluency. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 18
+}

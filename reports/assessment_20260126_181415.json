@@ -1,0 +1,49 @@
+{
+  "session_id": "4d7d2381-b89b-463d-a069-849d428f4331",
+  "timestamp": "2026-01-26T18:14:15.094836",
+  "report": {
+    "proficiency_level": "A2 (Lower Pre-Intermediate)",
+    "ceiling_phase": "Level-Up",
+    "ceiling_analysis": "The breakdown occurred during the Level-Up phase when the student struggled to elaborate on more complex ideas and experiences.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 3,
+        "observation": "The student displayed a moderate level of fluency but hesitated significantly when prompted for more depth, indicating cognitive load when asked to elaborate.",
+        "evidence": "\"몰라요.\""
+      },
+      {
+        "domain": "Grammar",
+        "rating": 3,
+        "observation": "While basic sentence structures were correctly used, there were moments lacking grammatical complexity, particularly when discussing hobbies and experiences.",
+        "evidence": "\"골프는 시간 없어요.\""
+      },
+      {
+        "domain": "Lexical",
+        "rating": 3,
+        "observation": "The student used simple vocabulary effectively but reverted to vague terms, indicating a lack of more specific lexical choices in complex contexts.",
+        "evidence": "\"정신없어요.\" (instead of providing more detail about leisure activities)"
+      },
+      {
+        "domain": "Phonology",
+        "rating": 4,
+        "observation": "The student's pronunciation was generally clear, with minor interference that did not impede understanding.",
+        "evidence": "N/A"
+      },
+      {
+        "domain": "Coherence",
+        "rating": 2,
+        "observation": "The responses often lacked cohesion, particularly in linking ideas, which affected the clarity of the narrative when discussing travel experiences.",
+        "evidence": "\"저는 따뜻한 나라 정말 좋아요.\" (no further elaboration)"
+      }
+    ],
+    "starting_module": "Module focused on Narrative Skills and Expanded Vocabulary (A2/B1)",
+    "logic_errors_to_debug": [
+      "Lack of detail in responses—needs development of circumlocution strategies to express thoughts when specific vocabulary is missing.",
+      "Confusion in logical coherence when shifting topics—practice linking phrases and ideas more explicitly."
+    ],
+    "optimization_strategy": "Implement Picture Narration exercises wherein the student describes a series of images to encourage fluent storytelling and the application of more descriptive vocabulary in context."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A2 (Lower Pre-Intermediate) level. You performed well during the Level-Up phase. The breakdown occurred during the Level-Up phase when the student struggled to elaborate on more complex ideas and experiences. \nLet me break down the key areas: Your strongest area is phonology with a rating of 4 out of 5. The student's pronunciation was generally clear, with minor interference that did not impede understanding. An area to focus on is coherence, rated at 2 out of 5. The responses often lacked cohesion, particularly in linking ideas, which affected the clarity of the narrative when discussing travel experiences. \nI recommend starting with the Module focused on Narrative Skills and Expanded Vocabulary (A2/B1) module. The top patterns to work on are: 1. Lack of detail in responses—needs development of circumlocution strategies to express thoughts when specific vocabulary is missing. 2. Confusion in logical coherence when shifting topics—practice linking phrases and ideas more explicitly. \nFor practice, I suggest this exercise: Implement Picture Narration exercises wherein the student describes a series of images to encourage fluent storytelling and the application of more descriptive vocabulary in context. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 18
+}
