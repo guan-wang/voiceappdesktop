@@ -42,8 +42,13 @@ async def lifespan(app: FastAPI):
     
     yield
     
-    # Shutdown (if needed)
+    # Shutdown
     print("👋 Shutting down server...")
+    
+    # Cancel all active sessions and their tasks
+    print("🧹 Cleaning up active sessions...")
+    await session_store.shutdown_all_sessions()
+    print("✅ All sessions cleaned up")
 
 
 # Initialize FastAPI app with lifespan
@@ -134,12 +139,18 @@ async def websocket_endpoint(websocket: WebSocket):
         # Cleanup
         session.is_active = False
         
-        # Cancel OpenAI task
+        # Cleanup bridge and its background tasks
+        try:
+            await bridge.cleanup()
+        except Exception as e:
+            print(f"⚠️ [{session.session_id[:8]}] Bridge cleanup error: {e}")
+        
+        # Cancel OpenAI task with timeout
         if not openai_task.done():
             openai_task.cancel()
             try:
-                await openai_task
-            except asyncio.CancelledError:
+                await asyncio.wait_for(openai_task, timeout=1.0)
+            except (asyncio.CancelledError, asyncio.TimeoutError):
                 pass
         
         # Remove session

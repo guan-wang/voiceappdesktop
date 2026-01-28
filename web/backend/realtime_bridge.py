@@ -40,6 +40,11 @@ class RealtimeBridge:
         
         # Response tracking
         self.current_response_id = None
+        self.response_in_progress = False  # Track if AI is currently responding
+        
+        # Track background tasks for cleanup
+        self.background_tasks = set()
+        self.is_shutting_down = False
     
     def get_system_instructions(self):
         """System instructions for the Korean language tutor"""
@@ -73,7 +78,7 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             "session": {
                 "modalities": ["text", "audio"],
                 "instructions": self.get_system_instructions(),
-                "voice": "marin",
+                "voice": "marin",  # Korean voice for interview
                 "input_audio_format": "pcm16",
                 "output_audio_format": "pcm16",
                 "input_audio_transcription": {
@@ -168,6 +173,7 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                 # CRITICAL: Trigger initial response to force tool call
                 # Without this, AI never calls interview_guidance in PTT mode
                 print(f"🔧 [{self.session.session_id[:8]}] Triggering initial response to load guidance...")
+                self.response_in_progress = True
                 await websocket.send(json.dumps({
                     "type": "response.create",
                     "response": {
@@ -273,6 +279,7 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
         
         elif event_type == "response.done":
             # Response complete
+            self.response_in_progress = False
             await self.send_to_client({
                 "type": "response_complete"
             })
@@ -347,34 +354,27 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             if self.session.assessment_state.trigger_assessment(reason):
                 print(f"✅ [{self.session.session_id[:8]}] Assessment state machine triggered")
                 
-                # Clear audio buffer
-                try:
-                    await self.openai_ws.send(json.dumps({"type": "input_audio_buffer.clear"}))
-                    print(f"🔇 [{self.session.session_id[:8]}] Audio buffer cleared")
-                except Exception as e:
-                    print(f"⚠️ [{self.session.session_id[:8]}] Failed to clear buffer: {e}")
-                
-                # Send acknowledgment instruction
-                print(f"💬 [{self.session.session_id[:8]}] Sending acknowledgment instruction...")
-                try:
-                    await self.send_tool_output(
-                        call_id,
-                        "Assessment triggered successfully. IMMEDIATELY tell the user in Korean: '평가를 준비하고 있습니다. 잠시만 기다려 주세요.' (Your assessment is being prepared. Please wait a moment.)"
-                    )
-                    print(f"✅ [{self.session.session_id[:8]}] Tool output sent")
-                except Exception as e:
-                    print(f"❌ [{self.session.session_id[:8]}] Failed to send tool output: {e}")
+                # DON'T send acknowledgment here - go straight to assessment
+                # The old flow caused the AI to keep repeating the acknowledgment
                 
                 # Notify client
                 await self.send_to_client({
                     "type": "assessment_triggered",
-                    "message": "Assessment is being prepared"
+                    "message": "Generating assessment..."
                 })
                 print(f"📱 [{self.session.session_id[:8]}] Client notified")
                 
+                # Send empty tool output to complete this function call
+                await self.send_tool_output(
+                    call_id,
+                    "Assessment triggered. Now generating report..."
+                )
+                
                 # Generate assessment in background (don't block WebSocket)
                 print(f"🚀 [{self.session.session_id[:8]}] Launching assessment generation...")
-                asyncio.create_task(self._generate_and_deliver_assessment())
+                task = asyncio.create_task(self._generate_and_deliver_assessment())
+                self.background_tasks.add(task)
+                task.add_done_callback(self.background_tasks.discard)
             else:
                 print(f"⚠️ [{self.session.session_id[:8]}] Assessment already triggered, ignoring duplicate")
     
@@ -384,11 +384,13 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
         try:
             print(f"🔍 [{self.session.session_id[:8]}] Starting assessment generation...")
             
-            # Wait for AI to speak acknowledgment first
-            await asyncio.sleep(2.0)
-            
             # Start keepalive task to prevent WebSocket timeout
             keepalive_task = asyncio.create_task(self._keepalive_during_assessment())
+            self.background_tasks.add(keepalive_task)
+            keepalive_task.add_done_callback(self.background_tasks.discard)
+            
+            # Short delay to let WebSocket stabilize
+            await asyncio.sleep(1.0)
             
             # Send progress update
             await self.send_to_client({
@@ -420,7 +422,17 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             if keepalive_task:
                 keepalive_task.cancel()
             
-            # Send summary to be spoken
+            # Wait for any in-progress response to complete naturally
+            retries = 0
+            while self.response_in_progress and retries < 20:
+                await asyncio.sleep(0.2)
+                retries += 1
+            
+            if self.response_in_progress:
+                print(f"⚠️ [{self.session.session_id[:8]}] Response still in progress, will skip voice change")
+                self.response_in_progress = False  # Reset flag
+            
+            # Send summary to be spoken (will handle voice switching internally)
             print(f"🗣️ [{self.session.session_id[:8]}] Sending summary to be spoken...")
             await self.send_text_message(verbal_summary, language="english")
             
@@ -435,6 +447,18 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             # Save report to file
             self.session.save_assessment_report(report, verbal_summary)
             
+        except asyncio.CancelledError:
+            print(f"🛑 [{self.session.session_id[:8]}] Assessment generation cancelled")
+            if keepalive_task and not keepalive_task.done():
+                keepalive_task.cancel()
+                try:
+                    await keepalive_task
+                except asyncio.CancelledError:
+                    pass
+            # Don't re-raise during shutdown
+            if not self.is_shutting_down:
+                raise
+            
         except Exception as e:
             print(f"❌ [{self.session.session_id[:8]}] Assessment generation error: {e}")
             import traceback
@@ -443,12 +467,19 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             # Stop keepalive if running
             if keepalive_task:
                 keepalive_task.cancel()
+                try:
+                    await keepalive_task
+                except asyncio.CancelledError:
+                    pass
             
             # Notify client of error
-            await self.send_to_client({
-                "type": "error",
-                "message": "Assessment generation failed. Please try ending the session."
-            })
+            try:
+                await self.send_to_client({
+                    "type": "error",
+                    "message": "Assessment generation failed. Please try ending the session."
+                })
+            except:
+                pass
             
             # Try to tell user
             try:
@@ -462,7 +493,7 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
     async def _keepalive_during_assessment(self):
         """Send periodic keepalive messages during assessment generation"""
         try:
-            while True:
+            while not self.is_shutting_down:
                 await asyncio.sleep(3.0)  # Send keepalive every 3 seconds
                 
                 # Send a harmless message to keep WebSocket alive
@@ -485,9 +516,16 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                 except Exception as e:
                     print(f"⚠️ [{self.session.session_id[:8]}] Keepalive failed: {e}")
                     break
+            
+            # Check if shutting down
+            if self.is_shutting_down:
+                break
                     
         except asyncio.CancelledError:
             print(f"🛑 [{self.session.session_id[:8]}] Keepalive task cancelled")
+            # Don't re-raise during shutdown
+            if not self.is_shutting_down:
+                raise
     
     async def send_tool_output(self, call_id: str, output_text: str):
         """Send tool output back to OpenAI"""
@@ -504,23 +542,58 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
         }
         await self.openai_ws.send(json.dumps(tool_output_event))
         
-        # Request follow-up response
-        await self.openai_ws.send(json.dumps({
-            "type": "response.create",
-            "response": {"modalities": ["text", "audio"]}
-        }))
+        # Request follow-up response (only if not already in progress)
+        if not self.response_in_progress:
+            self.response_in_progress = True
+            await self.openai_ws.send(json.dumps({
+                "type": "response.create",
+                "response": {"modalities": ["text", "audio"]}
+            }))
+        else:
+            print(f"⚠️ [{self.session.session_id[:8]}] Skipping response.create - already in progress")
     
     async def send_text_message(self, text: str, language: str = "auto"):
         """Send text message for AI to speak"""
-        # Determine language instruction
+        # Wait a bit if response is in progress
+        retries = 0
+        while self.response_in_progress and retries < 10:
+            await asyncio.sleep(0.1)
+            retries += 1
+        
+        # Determine voice and language instruction based on language
         if language == "english":
-            lang_instruction = "Speak this in natural American English pronunciation: "
+            voice = "alloy"  # Native English voice
+            lang_instruction = "You are a native American English speaker with clear, natural pronunciation. Speak this assessment summary in professional, clear American English: "
         elif language == "korean":
+            voice = "marin"  # Keep Korean voice for Korean
             lang_instruction = "Speak this in Korean: "
         else:
+            # Auto-detect based on text
             ascii_ratio = sum(1 for c in text if ord(c) < 128) / len(text) if text else 0
-            lang_instruction = "Speak this in natural American English pronunciation: " if ascii_ratio > 0.7 else "Speak this naturally: "
+            if ascii_ratio > 0.7:
+                voice = "alloy"
+                lang_instruction = "Speak this in natural American English pronunciation: "
+            else:
+                voice = "marin"
+                lang_instruction = "Speak this naturally: "
         
+        # Only switch voice if no response is in progress
+        # OpenAI doesn't allow voice changes when audio is present
+        if voice != "marin" and not self.response_in_progress:
+            try:
+                await self.openai_ws.send(json.dumps({
+                    "type": "session.update",
+                    "session": {
+                        "voice": voice
+                    }
+                }))
+                print(f"🎤 [{self.session.session_id[:8]}] Switched to voice: {voice}")
+                await asyncio.sleep(0.3)  # Give time for voice change to apply
+            except Exception as e:
+                # Voice switch failed, but continue anyway with stronger instructions
+                print(f"⚠️ [{self.session.session_id[:8]}] Voice switch failed (continuing with instructions): {e}")
+        
+        self.response_in_progress = True
         response_event = {
             "type": "response.create",
             "response": {
@@ -544,14 +617,43 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                 "type": "input_audio_buffer.commit"
             }))
             
-            # Request response
-            await self.openai_ws.send(json.dumps({
-                "type": "response.create",
-                "response": {"modalities": ["text", "audio"]}
-            }))
+            # Request response (only if not already in progress)
+            if not self.response_in_progress:
+                self.response_in_progress = True
+                await self.openai_ws.send(json.dumps({
+                    "type": "response.create",
+                    "response": {"modalities": ["text", "audio"]}
+                }))
+            else:
+                print(f"⚠️ [{self.session.session_id[:8]}] Skipping response.create - already in progress")
             
         except Exception as e:
-            print(f"❌ [{self.session.session_id[:8]}] Error handling client audio: {e}")
+            if not self.is_shutting_down:
+                print(f"❌ [{self.session.session_id[:8]}] Error handling client audio: {e}")
+    
+    async def cleanup(self):
+        """Cleanup this bridge and cancel all background tasks"""
+        print(f"🧹 [{self.session.session_id[:8]}] Cleaning up bridge...")
+        self.is_shutting_down = True
+        
+        # Cancel all tracked background tasks
+        for task in list(self.background_tasks):
+            if not task.done():
+                task.cancel()
+        
+        # Wait for all tasks to finish (with timeout)
+        if self.background_tasks:
+            try:
+                await asyncio.wait_for(
+                    asyncio.gather(*self.background_tasks, return_exceptions=True),
+                    timeout=2.0
+                )
+            except asyncio.TimeoutError:
+                print(f"⚠️ [{self.session.session_id[:8]}] Some tasks didn't finish in time")
+            except Exception as e:
+                print(f"⚠️ [{self.session.session_id[:8]}] Error during cleanup: {e}")
+        
+        print(f"✅ [{self.session.session_id[:8]}] Bridge cleanup complete")
     
     async def send_to_client(self, message: dict):
         """Send message to browser client"""

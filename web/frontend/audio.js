@@ -15,6 +15,10 @@ class AudioManager {
         // Audio settings to match OpenAI Realtime API
         this.sampleRate = 24000;
         this.targetSampleRate = 24000;
+        
+        // For gapless playback
+        this.nextStartTime = 0;
+        this.scheduledSources = [];
     }
     
     async initialize() {
@@ -245,16 +249,40 @@ class AudioManager {
             const audioBuffer = this.audioContext.createBuffer(1, float32Array.length, this.targetSampleRate);
             audioBuffer.getChannelData(0).set(float32Array);
             
-            // Create source and play
+            // Create source and connect
             const source = this.audioContext.createBufferSource();
             source.buffer = audioBuffer;
             source.connect(this.audioContext.destination);
             
+            // GAPLESS PLAYBACK: Schedule this chunk to start exactly when the previous ends
+            const currentTime = this.audioContext.currentTime;
+            const chunkDuration = audioBuffer.duration;
+            
+            // If this is the first chunk or there's a gap, start immediately
+            if (this.nextStartTime === 0 || this.nextStartTime < currentTime) {
+                this.nextStartTime = currentTime;
+            }
+            
+            // Schedule playback at precise time
+            source.start(this.nextStartTime);
+            
+            // Calculate when next chunk should start (exactly after this one)
+            this.nextStartTime += chunkDuration;
+            
+            // Clean up when finished
             source.onended = () => {
+                // Remove from scheduled sources
+                const index = this.scheduledSources.indexOf(source);
+                if (index > -1) {
+                    this.scheduledSources.splice(index, 1);
+                }
+                
+                // Process next chunk
                 this.processAudioQueue();
             };
             
-            source.start();
+            // Track scheduled sources
+            this.scheduledSources.push(source);
             
         } catch (error) {
             console.error('❌ Error playing audio:', error);
@@ -264,6 +292,20 @@ class AudioManager {
     
     clearQueue() {
         this.audioQueue = [];
+        
+        // Stop all scheduled audio sources
+        this.scheduledSources.forEach(source => {
+            try {
+                source.stop();
+            } catch (e) {
+                // Source might have already ended
+            }
+        });
+        this.scheduledSources = [];
+        
+        // Reset timing
+        this.nextStartTime = 0;
+        this.isPlaying = false;
     }
     
     cleanup() {

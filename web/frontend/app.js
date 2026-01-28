@@ -10,6 +10,7 @@ class KoreanVoiceTutor {
         this.isRecording = false;
         this.isConnected = false;
         this.isAISpeaking = false;
+        this.isAssessing = false;  // Track if assessment is in progress
         
         // PTT timing
         this.pressStartTime = null;
@@ -149,16 +150,19 @@ class KoreanVoiceTutor {
                 break;
             
             case 'assessment_triggered':
-                this.showMessage('system', '📊 Assessment triggered. Preparing your evaluation...');
+                this.showMessage('system', '📊 Generating assessment...');
                 this.pttButton.disabled = true;
-                this.pttHint.textContent = 'Assessment in progress...';
+                this.pttButton.style.opacity = '0.5';
+                this.pttHint.textContent = 'Please wait...';
+                this.isAssessing = true;
                 break;
             
             case 'assessment_complete':
-                this.showMessage('system', '✅ Assessment complete! Listen to your results.');
+                this.showMessage('system', '✅ Assessment complete! Listening to results...');
                 console.log('📊 Assessment report:', message.report);
-                // Report is available in message.report
-                // Summary being spoken by AI
+                this.isAssessing = false;
+                // Keep button disabled while AI speaks results
+                // Will re-enable after AI finishes
                 break;
             
             case 'error':
@@ -213,7 +217,13 @@ class KoreanVoiceTutor {
     }
     
     startRecording() {
-        if (!this.isConnected || this.isRecording || this.isAISpeaking) {
+        if (!this.isConnected || this.isRecording || this.isAISpeaking || this.isAssessing) {
+            console.log('Cannot start recording:', {
+                connected: this.isConnected,
+                recording: this.isRecording,
+                aiSpeaking: this.isAISpeaking,
+                assessing: this.isAssessing
+            });
             return;
         }
         

@@ -5,7 +5,7 @@ Manages PyAudio streams, queues, and buffers
 
 import pyaudio
 import queue
-from .audio_config import CHUNK, FORMAT, CHANNELS, RATE, BYTES_PER_SAMPLE
+from .audio_config import CHUNK, FORMAT, CHANNELS, RATE, BYTES_PER_SAMPLE, MIN_BUFFER_SIZE
 
 
 class AudioManager:
@@ -48,28 +48,39 @@ class AudioManager:
             raise
     
     def _output_callback(self, in_data, frame_count, time_info, status):
-        """Callback for audio output - plays audio from API"""
+        """Callback for audio output - plays audio from API with smooth buffering"""
         # Calculate how many bytes we need (frame_count * bytes_per_sample * channels)
         bytes_needed = frame_count * BYTES_PER_SAMPLE * CHANNELS
         
-        # First, try to get data from buffer
-        if len(self.audio_buffer) >= bytes_needed:
-            data = bytes(self.audio_buffer[:bytes_needed])
-            self.audio_buffer = self.audio_buffer[bytes_needed:]
-            return (data, pyaudio.paContinue)
-        
-        # If buffer doesn't have enough, try to get from queue
+        # Try to fill buffer from queue first (pre-buffering)
         try:
-            while len(self.audio_buffer) < bytes_needed:
-                chunk = self.audio_queue.get_nowait()
-                self.audio_buffer.extend(chunk)
-            
+            # Keep pulling from queue while we can (up to a reasonable limit)
+            max_prebuffer = MIN_BUFFER_SIZE * 2
+            while len(self.audio_buffer) < max_prebuffer:
+                try:
+                    chunk = self.audio_queue.get_nowait()
+                    self.audio_buffer.extend(chunk)
+                except queue.Empty:
+                    break
+        except Exception:
+            pass
+        
+        # Now check if we have enough data
+        if len(self.audio_buffer) >= bytes_needed:
+            # We have enough data - return it
             data = bytes(self.audio_buffer[:bytes_needed])
             self.audio_buffer = self.audio_buffer[bytes_needed:]
             return (data, pyaudio.paContinue)
-            
-        except queue.Empty:
-            # Not enough data available - return silence
+        elif len(self.audio_buffer) > 0:
+            # We have some data but not enough - pad with what we have
+            # This prevents harsh cuts and provides smoother transitions
+            data = bytes(self.audio_buffer)
+            padding_needed = bytes_needed - len(data)
+            data += b'\x00' * padding_needed
+            self.audio_buffer = bytearray()  # Clear buffer
+            return (data, pyaudio.paContinue)
+        else:
+            # No data available - return silence (smooth transition)
             return (b'\x00' * bytes_needed, pyaudio.paContinue)
     
     def start_streams(self):

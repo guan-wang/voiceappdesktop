@@ -150,6 +150,71 @@ class SessionStore:
         if not self._cleanup_task:
             self._cleanup_task = asyncio.create_task(self.cleanup_stale_sessions())
     
+    async def shutdown_all_sessions(self):
+        """Shutdown all active sessions and cancel their tasks"""
+        session_count = len(self.sessions)
+        if session_count == 0:
+            print("✅ No active sessions to shutdown")
+            return
+            
+        print(f"🧹 Shutting down {session_count} active session(s)...")
+        
+        # Cancel cleanup task first
+        if self._cleanup_task and not self._cleanup_task.done():
+            self._cleanup_task.cancel()
+            try:
+                await asyncio.wait_for(self._cleanup_task, timeout=1.0)
+            except (asyncio.CancelledError, asyncio.TimeoutError):
+                pass
+        
+        # Close all sessions with timeout
+        session_ids = list(self.sessions.keys())
+        cleanup_tasks = []
+        
+        for session_id in session_ids:
+            session = self.sessions.get(session_id)
+            if session:
+                cleanup_tasks.append(self._cleanup_single_session(session, session_id))
+        
+        # Wait for all cleanups with timeout
+        if cleanup_tasks:
+            try:
+                await asyncio.wait_for(
+                    asyncio.gather(*cleanup_tasks, return_exceptions=True),
+                    timeout=3.0
+                )
+            except asyncio.TimeoutError:
+                print("⚠️ Some sessions didn't cleanup in time, forcing shutdown")
+        
+        # Force clear any remaining sessions
+        self.sessions.clear()
+        print("✅ All sessions shut down")
+    
+    async def _cleanup_single_session(self, session, session_id):
+        """Cleanup a single session"""
+        try:
+            # Cancel OpenAI task
+            if session.openai_task and not session.openai_task.done():
+                session.openai_task.cancel()
+                try:
+                    await asyncio.wait_for(session.openai_task, timeout=1.0)
+                except (asyncio.CancelledError, asyncio.TimeoutError):
+                    pass
+            
+            # Close OpenAI websocket
+            if session.openai_websocket:
+                try:
+                    await session.openai_websocket.close()
+                except Exception:
+                    pass
+            
+            # Remove from store
+            if session_id in self.sessions:
+                del self.sessions[session_id]
+                
+        except Exception as e:
+            print(f"⚠️ Error cleaning session {session_id[:8]}: {e}")
+    
     def get_active_session_count(self) -> int:
         """Get number of active sessions"""
         return len(self.sessions)
