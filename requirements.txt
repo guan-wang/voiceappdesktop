@@ -4,3 +4,4 @@ websockets>=12.0,<14.0
 pyaudio>=0.2.14
 pynput
 pypdf
+certifi>=2024.0.0

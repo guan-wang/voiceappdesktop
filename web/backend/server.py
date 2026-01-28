@@ -6,6 +6,7 @@ Serves frontend and handles WebSocket connections
 import os
 import sys
 import asyncio
+import signal
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
@@ -43,12 +44,20 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown
-    print("👋 Shutting down server...")
+    print("\n👋 Shutting down server...")
     
-    # Cancel all active sessions and their tasks
+    # Cancel all active sessions and their tasks with timeout
     print("🧹 Cleaning up active sessions...")
-    await session_store.shutdown_all_sessions()
-    print("✅ All sessions cleaned up")
+    try:
+        await asyncio.wait_for(
+            session_store.shutdown_all_sessions(),
+            timeout=5.0
+        )
+        print("✅ All sessions cleaned up")
+    except asyncio.TimeoutError:
+        print("⚠️ Cleanup timeout - forcing shutdown")
+    except Exception as e:
+        print(f"⚠️ Error during cleanup: {e}")
 
 
 # Initialize FastAPI app with lifespan
@@ -64,6 +73,13 @@ async def read_root():
     """Serve the main frontend HTML"""
     index_path = os.path.join(frontend_dir, "index.html")
     return FileResponse(index_path)
+
+
+@app.get("/survey")
+async def read_survey():
+    """Serve the survey page"""
+    survey_path = os.path.join(frontend_dir, "survey.html")
+    return FileResponse(survey_path)
 
 
 @app.get("/health")
@@ -191,23 +207,21 @@ def main():
     
     print("\nPress Ctrl+C to stop\n")
     
-    # Run with SSL if certificates exist
+    # Configure uvicorn with proper timeouts
+    config = {
+        "app": app,
+        "host": "0.0.0.0",
+        "port": port,
+        "log_level": "info",
+        "timeout_graceful_shutdown": 5  # Force shutdown after 5 seconds
+    }
+    
+    # Add SSL if certificates exist
     if use_ssl:
-        uvicorn.run(
-            app,
-            host="0.0.0.0",
-            port=port,
-            ssl_keyfile=key_file,
-            ssl_certfile=cert_file,
-            log_level="info"
-        )
-    else:
-        uvicorn.run(
-            app,
-            host="0.0.0.0",
-            port=port,
-            log_level="info"
-        )
+        config["ssl_keyfile"] = key_file
+        config["ssl_certfile"] = cert_file
+    
+    uvicorn.run(**config)
 
 
 if __name__ == "__main__":

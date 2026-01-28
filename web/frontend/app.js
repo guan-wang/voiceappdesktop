@@ -10,51 +10,123 @@ class KoreanVoiceTutor {
         this.isRecording = false;
         this.isConnected = false;
         this.isAISpeaking = false;
-        this.isAssessing = false;  // Track if assessment is in progress
+        this.isAssessing = false;
+        this.isInitialized = false;
+        this.assessmentComplete = false;
+        this.hasInteractedWithMic = false; // Track if user has pressed mic
         
         // PTT timing
         this.pressStartTime = null;
-        this.minHoldDuration = 500; // 500ms minimum
+        this.minHoldDuration = 1000; // 1000ms minimum (changed from 500ms)
         this.maxHoldDuration = 60000; // 60s maximum
         
-        // UI elements
-        this.pttButton = document.getElementById('pttButton');
-        this.pttHint = document.getElementById('pttHint');
-        this.status = document.getElementById('status');
-        this.statusText = this.status.querySelector('.status-text');
-        this.transcriptContainer = document.getElementById('transcriptContainer');
+        // Streaming state
+        this.streamingText = '';
+        this.streamingInterval = null;
         
-        this.init();
+        // UI elements
+        this.micButton = document.getElementById('micButton');
+        this.micHint = document.getElementById('micHint');
+        this.micTip = document.getElementById('micTip');
+        this.statusIndicator = document.getElementById('statusIndicator');
+        this.statusText = document.getElementById('statusText');
+        this.statusDot = this.statusIndicator.querySelector('.status-dot');
+        this.aiTranscript = document.getElementById('aiTranscript');
+        this.userTranscript = document.getElementById('userTranscript');
+        this.loadingState = document.getElementById('loadingState');
+        this.systemMessage = document.getElementById('systemMessage');
+        this.welcomeOverlay = document.getElementById('welcomeOverlay');
+        this.startButton = document.getElementById('startButton');
+        this.beginnerLink = document.getElementById('beginnerLink');
+        this.beginnerModal = document.getElementById('beginnerModal');
+        this.modalCloseButton = document.getElementById('modalCloseButton');
+        this.loadingOverlay = document.getElementById('loadingOverlay');
+        this.nextButtonContainer = document.getElementById('nextButtonContainer');
+        this.nextButton = document.getElementById('nextButton');
+        
+        // Setup welcome screen
+        this.setupWelcomeScreen();
+        
+        // Setup next button
+        this.setupNextButton();
+    }
+    
+    setupWelcomeScreen() {
+        // Handle START button
+        this.startButton.addEventListener('click', () => {
+            // Hide welcome overlay with animation
+            this.welcomeOverlay.classList.add('hidden');
+            
+            // Start initialization after animation
+            setTimeout(() => {
+                this.init();
+            }, 300);
+        });
+        
+        // Handle beginner link
+        this.beginnerLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showBeginnerModal();
+        });
+        
+        // Handle modal close button
+        this.modalCloseButton.addEventListener('click', () => {
+            this.hideBeginnerModal();
+        });
+        
+        // Handle clicking outside modal to close
+        this.beginnerModal.addEventListener('click', (e) => {
+            if (e.target === this.beginnerModal) {
+                this.hideBeginnerModal();
+            }
+        });
+    }
+    
+    showBeginnerModal() {
+        this.beginnerModal.classList.add('active');
+    }
+    
+    hideBeginnerModal() {
+        this.beginnerModal.classList.remove('active');
+    }
+    
+    setupNextButton() {
+        this.nextButton.addEventListener('click', () => {
+            // Navigate to survey page (placeholder for now)
+            window.location.href = '/survey';
+        });
     }
     
     async init() {
+        if (this.isInitialized) {
+            return;
+        }
+        
         try {
             console.log('🚀 Initializing app...');
+            this.isInitialized = true;
+            
+            // Show loading state
+            this.showLoading();
+            this.setMicButtonState('inactive');
             
             // Initialize audio
             await this.audioManager.initialize();
             console.log('✅ Audio manager initialized');
             
-            this.updateStatus('connecting', 'Connecting to server...');
-            
             // Connect to WebSocket
             this.connect();
             
-            // Setup PTT button
-            this.setupPTTButton();
+            // Setup mic button
+            this.setupMicButton();
             
             console.log('✅ App initialized successfully');
             
         } catch (error) {
             console.error('❌ Initialization error:', error);
-            this.updateStatus('error', 'Initialization failed');
-            
-            // Show detailed error message
-            this.showMessage('system', error.message || 'Failed to initialize. Please check browser permissions.');
-            
-            // Keep button disabled
-            this.pttButton.disabled = true;
-            this.pttHint.textContent = error.message || 'Initialization failed';
+            this.hideLoading();
+            this.showEphemeralMessage('Failed to initialize. Please refresh the page.');
+            this.setMicButtonState('inactive');
         }
     }
     
@@ -67,7 +139,7 @@ class KoreanVoiceTutor {
         
         this.ws.onopen = () => {
             console.log('✅ WebSocket connected');
-            this.updateStatus('connecting', 'Connected, starting session...');
+            this.statusDot.classList.add('connected');
         };
         
         this.ws.onmessage = (event) => {
@@ -76,19 +148,20 @@ class KoreanVoiceTutor {
         
         this.ws.onerror = (error) => {
             console.error('❌ WebSocket error:', error);
-            this.updateStatus('error', 'Connection error');
+            this.statusDot.classList.add('error');
+            this.showEphemeralMessage('Connection error');
         };
         
         this.ws.onclose = () => {
             console.log('🔌 WebSocket closed');
-            this.updateStatus('error', 'Disconnected');
+            this.statusDot.classList.add('error');
             this.isConnected = false;
-            this.pttButton.disabled = true;
+            this.setMicButtonState('inactive');
             
             // Attempt reconnection after 3 seconds
             setTimeout(() => {
                 if (!this.isConnected) {
-                    this.showMessage('system', 'Attempting to reconnect...');
+                    this.showEphemeralMessage('Attempting to reconnect...');
                     this.connect();
                 }
             }, 3000);
@@ -106,34 +179,31 @@ class KoreanVoiceTutor {
             
             case 'session_started':
                 this.isConnected = true;
-                this.updateStatus('connected', 'Loading interview protocol...');
-                this.pttButton.disabled = true;  // Keep disabled until setup complete
-                this.pttHint.textContent = 'Loading...';
-                this.clearWelcome();
-                this.showMessage('system', 'Initializing interview...');
+                this.statusDot.classList.add('connected');
+                console.log('✅ Session started, loading guidance...');
                 break;
             
             case 'setup_complete':
-                // Interview guidance loaded, now ready for user
-                this.updateStatus('connected', 'Ready to speak');
-                this.pttButton.disabled = false;
-                this.pttHint.textContent = 'Hold button to speak in Korean';
-                this.showMessage('system', message.message || 'Ready! Hold the button to speak.');
+                // Interview guidance loaded, ready for user
+                console.log('✅ Setup complete, ready to speak');
+                this.hideLoading();
+                this.setMicButtonState('ready');
+                this.micHint.textContent = '버튼을 누르고 말하세요';
                 break;
             
             case 'user_transcript':
-                this.showMessage('user', message.text);
+                this.streamUserTranscript(message.text);
                 break;
             
             case 'ai_transcript':
-                this.showMessage('ai', message.text);
+                this.streamAITranscript(message.text);
                 break;
             
             case 'ai_audio':
                 // Play AI audio
                 if (!this.isAISpeaking) {
                     this.isAISpeaking = true;
-                    this.pttButton.disabled = true; // Disable PTT while AI speaks
+                    this.setMicButtonState('inactive'); // Disable while AI speaks
                     console.log('🔊 AI started speaking');
                 }
                 this.audioManager.playAudioChunk(message.audio);
@@ -143,99 +213,108 @@ class KoreanVoiceTutor {
                 // AI finished responding
                 console.log('✅ AI response complete');
                 this.isAISpeaking = false;
-                if (this.isConnected) {
-                    this.pttButton.disabled = false;
-                    this.pttHint.textContent = 'Ready - Hold button to speak';
+                
+                // If assessment is complete, show Next button instead of re-enabling mic
+                if (this.assessmentComplete) {
+                    console.log('📋 Assessment report finished - showing Next button');
+                    this.showNextButton();
+                } else if (this.isConnected && !this.isAssessing) {
+                    // Re-enable button after AI finishes (normal conversation)
+                    this.setMicButtonState('ready');
                 }
                 break;
             
             case 'assessment_triggered':
-                this.showMessage('system', '📊 Generating assessment...');
-                this.pttButton.disabled = true;
-                this.pttButton.style.opacity = '0.5';
-                this.pttHint.textContent = 'Please wait...';
+                console.log('📊 Assessment triggered');
+                this.setMicButtonState('inactive');
                 this.isAssessing = true;
+                // Show loading overlay
+                this.showLoadingOverlay();
                 break;
             
             case 'assessment_complete':
-                this.showMessage('system', '✅ Assessment complete! Listening to results...');
-                console.log('📊 Assessment report:', message.report);
+                console.log('📊 Assessment complete:', message.report);
                 this.isAssessing = false;
-                // Keep button disabled while AI speaks results
-                // Will re-enable after AI finishes
+                this.assessmentComplete = true;
+                // Hide loading overlay - return to conversation
+                this.hideLoadingOverlay();
+                // AI will now speak the report, so keep mic disabled
+                this.setMicButtonState('inactive');
+                this.micButton.disabled = true;
                 break;
             
             case 'error':
                 console.error('❌ Server error:', message.message);
-                this.showMessage('system', `Error: ${message.message}`);
+                this.showEphemeralMessage('Error: ' + message.message);
                 break;
         }
     }
     
-    setupPTTButton() {
-        // Handle both touch and mouse events for broad compatibility
-        
+    setupMicButton() {
         // Touch events (mobile)
-        this.pttButton.addEventListener('touchstart', (e) => {
+        this.micButton.addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.startRecording();
         });
         
-        this.pttButton.addEventListener('touchend', (e) => {
+        this.micButton.addEventListener('touchend', (e) => {
             e.preventDefault();
             this.stopRecording();
         });
         
-        this.pttButton.addEventListener('touchcancel', (e) => {
+        this.micButton.addEventListener('touchcancel', (e) => {
             e.preventDefault();
             this.stopRecording();
         });
         
         // Mouse events (desktop)
-        this.pttButton.addEventListener('mousedown', (e) => {
-            if (!('ontouchstart' in window)) { // Only for non-touch devices
+        this.micButton.addEventListener('mousedown', (e) => {
+            if (!('ontouchstart' in window)) {
                 this.startRecording();
             }
         });
         
-        this.pttButton.addEventListener('mouseup', (e) => {
+        this.micButton.addEventListener('mouseup', (e) => {
             if (!('ontouchstart' in window)) {
                 this.stopRecording();
             }
         });
         
-        this.pttButton.addEventListener('mouseleave', (e) => {
+        this.micButton.addEventListener('mouseleave', (e) => {
             if (!('ontouchstart' in window) && this.isRecording) {
                 this.stopRecording();
             }
         });
         
-        // Prevent context menu on long press
-        this.pttButton.addEventListener('contextmenu', (e) => {
+        // Prevent context menu
+        this.micButton.addEventListener('contextmenu', (e) => {
             e.preventDefault();
         });
     }
     
     startRecording() {
-        if (!this.isConnected || this.isRecording || this.isAISpeaking || this.isAssessing) {
-            console.log('Cannot start recording:', {
-                connected: this.isConnected,
-                recording: this.isRecording,
-                aiSpeaking: this.isAISpeaking,
-                assessing: this.isAssessing
-            });
+        if (!this.isConnected || this.isRecording || this.isAISpeaking || this.isAssessing || 
+            this.micButton.classList.contains('state-inactive')) {
             return;
+        }
+        
+        // Hide tip on first mic interaction
+        if (!this.hasInteractedWithMic) {
+            this.hasInteractedWithMic = true;
+            this.micTip.classList.add('hidden');
         }
         
         this.isRecording = true;
         this.pressStartTime = Date.now();
         
         // Visual feedback
-        this.pttButton.classList.add('recording');
-        this.pttButton.querySelector('.ptt-text').textContent = 'Recording...';
-        this.pttHint.textContent = 'Release to send';
+        this.setMicButtonState('recording');
+        this.micHint.textContent = '말하는 중...';
         
-        // Haptic feedback if available
+        // Clear user transcript
+        this.userTranscript.textContent = '';
+        
+        // Haptic feedback
         if (navigator.vibrate) {
             navigator.vibrate(50);
         }
@@ -244,15 +323,13 @@ class KoreanVoiceTutor {
         try {
             console.log('🎤 Starting recording...');
             this.audioManager.startRecording((audioData) => {
-                console.log('📤 Audio data ready to send');
                 this.sendAudio(audioData);
             });
-            console.log('✅ Recording started successfully');
         } catch (error) {
             console.error('❌ Recording error:', error);
-            this.showMessage('system', error.message || 'Recording failed. Please refresh the page and try again.');
+            this.showEphemeralMessage('Recording failed. Please try again.');
             this.isRecording = false;
-            this.resetPTTButton();
+            this.setMicButtonState('ready');
         }
     }
     
@@ -263,20 +340,21 @@ class KoreanVoiceTutor {
         
         const holdDuration = Date.now() - this.pressStartTime;
         
-        // Check minimum hold duration
+        // Check minimum hold duration (1000ms)
         if (holdDuration < this.minHoldDuration) {
             console.log('⚠️ Too short:', holdDuration, 'ms');
-            this.showMessage('system', 'Hold the button longer to speak');
+            this.showEphemeralMessage('Hold the button longer to speak');
             this.audioManager.stopRecording();
             this.isRecording = false;
-            this.resetPTTButton();
+            this.setMicButtonState('ready');
+            this.micHint.textContent = '버튼을 누르고 말하세요';
             return;
         }
         
         // Check maximum hold duration
         if (holdDuration > this.maxHoldDuration) {
             console.log('⚠️ Too long:', holdDuration, 'ms');
-            this.showMessage('system', 'Message too long. Please speak more concisely.');
+            this.showEphemeralMessage('Message too long. Please speak more concisely.');
         }
         
         // Stop recording
@@ -284,8 +362,8 @@ class KoreanVoiceTutor {
         this.isRecording = false;
         
         // Visual feedback
-        this.pttButton.querySelector('.ptt-text').textContent = 'Processing...';
-        this.pttHint.textContent = 'Sending audio...';
+        this.setMicButtonState('inactive');
+        this.micHint.textContent = '처리 중...';
         
         // Haptic feedback
         if (navigator.vibrate) {
@@ -298,8 +376,8 @@ class KoreanVoiceTutor {
     sendAudio(audioData) {
         if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
             console.error('❌ WebSocket not connected');
-            this.showMessage('system', 'Connection lost. Please refresh.');
-            this.resetPTTButton();
+            this.showEphemeralMessage('Connection lost. Please refresh.');
+            this.setMicButtonState('ready');
             return;
         }
         
@@ -309,57 +387,88 @@ class KoreanVoiceTutor {
                 data: audioData
             }));
             console.log('📤 Audio sent');
-            this.resetPTTButton();
         } catch (error) {
             console.error('❌ Send error:', error);
-            this.showMessage('system', 'Failed to send audio');
-            this.resetPTTButton();
+            this.showEphemeralMessage('Failed to send audio');
+            this.setMicButtonState('ready');
         }
     }
     
-    resetPTTButton() {
-        this.pttButton.classList.remove('recording');
-        this.pttButton.querySelector('.ptt-text').textContent = 'Hold to Speak';
-        this.pttHint.textContent = 'Hold button to speak in Korean';
+    // Mic button state management
+    setMicButtonState(state) {
+        this.micButton.className = 'mic-button state-' + state;
+        this.micButton.disabled = (state === 'inactive');
     }
     
-    updateStatus(state, text) {
-        this.status.className = 'status ' + state;
-        this.statusText.textContent = text;
+    // Loading state
+    showLoading() {
+        this.loadingState.classList.add('active');
     }
     
-    clearWelcome() {
-        const welcome = this.transcriptContainer.querySelector('.transcript-welcome');
-        if (welcome) {
-            welcome.remove();
+    hideLoading() {
+        this.loadingState.classList.remove('active');
+    }
+    
+    // Ephemeral system message
+    showEphemeralMessage(text, duration = 3000) {
+        this.systemMessage.textContent = text;
+        this.systemMessage.classList.add('show');
+        
+        setTimeout(() => {
+            this.systemMessage.classList.remove('show');
+        }, duration);
+    }
+    
+    // Stream AI transcript character by character
+    streamAITranscript(text) {
+        if (this.streamingInterval) {
+            clearInterval(this.streamingInterval);
         }
+        
+        this.aiTranscript.textContent = '';
+        let charIndex = 0;
+        
+        this.streamingInterval = setInterval(() => {
+            if (charIndex < text.length) {
+                this.aiTranscript.textContent += text[charIndex];
+                charIndex++;
+            } else {
+                clearInterval(this.streamingInterval);
+            }
+        }, 30); // 30ms per character
     }
     
-    showMessage(role, text) {
-        this.clearWelcome();
+    // Stream user transcript character by character
+    streamUserTranscript(text) {
+        this.userTranscript.textContent = '';
+        let charIndex = 0;
         
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `transcript-message ${role}`;
-        
-        if (role !== 'system') {
-            const label = document.createElement('div');
-            label.className = 'transcript-label';
-            label.textContent = role === 'user' ? 'You' : 'AI';
-            messageDiv.appendChild(label);
-        }
-        
-        const textDiv = document.createElement('div');
-        textDiv.className = 'transcript-text';
-        textDiv.textContent = text;
-        messageDiv.appendChild(textDiv);
-        
-        this.transcriptContainer.appendChild(messageDiv);
-        
-        // Auto-scroll to bottom
-        this.transcriptContainer.scrollTop = this.transcriptContainer.scrollHeight;
+        const interval = setInterval(() => {
+            if (charIndex < text.length) {
+                this.userTranscript.textContent += text[charIndex];
+                charIndex++;
+            } else {
+                clearInterval(interval);
+            }
+        }, 30); // 30ms per character
+    }
+    
+    showLoadingOverlay() {
+        this.loadingOverlay.style.display = 'flex';
+    }
+    
+    hideLoadingOverlay() {
+        this.loadingOverlay.style.display = 'none';
+    }
+    
+    showNextButton() {
+        this.nextButtonContainer.style.display = 'block';
     }
     
     cleanup() {
+        if (this.streamingInterval) {
+            clearInterval(this.streamingInterval);
+        }
         if (this.ws) {
             this.ws.close();
         }

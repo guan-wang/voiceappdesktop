@@ -10,6 +10,8 @@ import uuid
 from datetime import datetime
 from openai import OpenAI
 import websockets
+import ssl
+import certifi
 import base64
 import pyaudio
 import queue
@@ -232,10 +234,13 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             ws_url = self.get_websocket_url()
             headers = self.get_websocket_headers()
             
-            # websockets library expects additional_headers as a list of (name, value) tuples
+            # websockets library expects extra_headers as a list of (name, value) tuples
             header_list = [(name, value) for name, value in headers.items()]
             
-            async with websockets.connect(ws_url, additional_headers=header_list) as websocket:
+            # Create SSL context with certifi certificates
+            ssl_context = ssl.create_default_context(cafile=certifi.where())
+            
+            async with websockets.connect(ws_url, extra_headers=header_list, ssl=ssl_context) as websocket:
                 # Send session configuration
                 config = {
                     "type": "session.update",

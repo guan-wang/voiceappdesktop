@@ -8,6 +8,8 @@ import json
 import base64
 import asyncio
 import websockets
+import ssl
+import certifi
 from datetime import datetime
 from typing import Optional
 import sys
@@ -145,8 +147,11 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             
             print(f"🔌 [{self.session.session_id[:8]}] Connecting to OpenAI Realtime API...")
             
+            # Create SSL context for macOS compatibility with certifi
+            ssl_context = ssl.create_default_context(cafile=certifi.where())
+            
             # Use extra_headers parameter (works with websockets 13.x)
-            async with websockets.connect(ws_url, extra_headers=extra_headers) as websocket:
+            async with websockets.connect(ws_url, extra_headers=extra_headers, ssl=ssl_context) as websocket:
                 self.openai_ws = websocket
                 self.session.openai_websocket = websocket
                 
@@ -418,19 +423,40 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             print(f"📝 [{self.session.session_id[:8]}] Verbal summary created")
             print(f"📋 [{self.session.session_id[:8]}] Assessment complete: {report.proficiency_level}")
             
-            # Stop keepalive
-            if keepalive_task:
+            # FIX #3: Stop keepalive and await cancellation properly
+            if keepalive_task and not keepalive_task.done():
+                print(f"🛑 [{self.session.session_id[:8]}] Stopping keepalive task...")
                 keepalive_task.cancel()
+                try:
+                    await keepalive_task
+                except asyncio.CancelledError:
+                    print(f"✅ [{self.session.session_id[:8]}] Keepalive cancelled cleanly")
+                    pass
             
-            # Wait for any in-progress response to complete naturally
-            retries = 0
-            while self.response_in_progress and retries < 20:
-                await asyncio.sleep(0.2)
-                retries += 1
-            
+            # FIX #1: Only cancel if there's actually a response in progress
             if self.response_in_progress:
-                print(f"⚠️ [{self.session.session_id[:8]}] Response still in progress, will skip voice change")
-                self.response_in_progress = False  # Reset flag
+                try:
+                    print(f"🔇 [{self.session.session_id[:8]}] Cancelling active response...")
+                    await self.openai_ws.send(json.dumps({
+                        "type": "response.cancel"
+                    }))
+                    self.response_in_progress = False  # Force clear immediately
+                    await asyncio.sleep(0.5)  # FIX #2: Longer wait (500ms instead of 300ms)
+                    print(f"✅ [{self.session.session_id[:8]}] Response cancelled")
+                except Exception as e:
+                    print(f"⚠️ [{self.session.session_id[:8]}] Could not cancel response: {e}")
+                    self.response_in_progress = False  # Force clear on error
+            else:
+                print(f"ℹ️ [{self.session.session_id[:8]}] No active response to cancel")
+            
+            # FIX #4: Clear any lingering audio buffers
+            try:
+                await self.openai_ws.send(json.dumps({
+                    "type": "input_audio_buffer.clear"
+                }))
+                await asyncio.sleep(0.2)  # Let buffer clear
+            except Exception as e:
+                print(f"⚠️ [{self.session.session_id[:8]}] Could not clear audio buffer: {e}")
             
             # Send summary to be spoken (will handle voice switching internally)
             print(f"🗣️ [{self.session.session_id[:8]}] Sending summary to be spoken...")
@@ -449,11 +475,13 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             
         except asyncio.CancelledError:
             print(f"🛑 [{self.session.session_id[:8]}] Assessment generation cancelled")
+            # FIX #3: Proper keepalive cleanup on cancellation
             if keepalive_task and not keepalive_task.done():
                 keepalive_task.cancel()
                 try:
                     await keepalive_task
                 except asyncio.CancelledError:
+                    print(f"✅ [{self.session.session_id[:8]}] Keepalive cancelled in exception handler")
                     pass
             # Don't re-raise during shutdown
             if not self.is_shutting_down:
@@ -464,12 +492,13 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             import traceback
             traceback.print_exc()
             
-            # Stop keepalive if running
-            if keepalive_task:
+            # FIX #3: Stop keepalive with proper awaiting
+            if keepalive_task and not keepalive_task.done():
                 keepalive_task.cancel()
                 try:
                     await keepalive_task
                 except asyncio.CancelledError:
+                    print(f"✅ [{self.session.session_id[:8]}] Keepalive cancelled in error handler")
                     pass
             
             # Notify client of error
@@ -516,10 +545,6 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                 except Exception as e:
                     print(f"⚠️ [{self.session.session_id[:8]}] Keepalive failed: {e}")
                     break
-            
-            # Check if shutting down
-            if self.is_shutting_down:
-                break
                     
         except asyncio.CancelledError:
             print(f"🛑 [{self.session.session_id[:8]}] Keepalive task cancelled")
@@ -554,11 +579,15 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
     
     async def send_text_message(self, text: str, language: str = "auto"):
         """Send text message for AI to speak"""
-        # Wait a bit if response is in progress
+        # FIX #4: Wait longer if response is in progress
         retries = 0
-        while self.response_in_progress and retries < 10:
+        while self.response_in_progress and retries < 20:  # Increased from 10 to 20
             await asyncio.sleep(0.1)
             retries += 1
+        
+        if self.response_in_progress:
+            print(f"⚠️ [{self.session.session_id[:8]}] Response still in progress after 2s, forcing clear")
+            self.response_in_progress = False
         
         # Determine voice and language instruction based on language
         if language == "english":
@@ -577,18 +606,43 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                 voice = "marin"
                 lang_instruction = "Speak this naturally: "
         
-        # Only switch voice if no response is in progress
-        # OpenAI doesn't allow voice changes when audio is present
-        if voice != "marin" and not self.response_in_progress:
+        # FIX #5: Improved voice switching with proper guards and timing
+        if voice != "marin":
             try:
+                print(f"🎤 [{self.session.session_id[:8]}] Preparing to switch voice to: {voice}")
+                
+                # FIX #1: Only cancel if there's actually a response
+                if self.response_in_progress:
+                    print(f"🔇 [{self.session.session_id[:8]}] Cancelling active response before voice switch...")
+                    await self.openai_ws.send(json.dumps({
+                        "type": "response.cancel"
+                    }))
+                    self.response_in_progress = False  # Force clear
+                    await asyncio.sleep(0.5)  # FIX #2: Longer wait
+                
+                # FIX #4: Clear conversation output items to ensure clean state
+                try:
+                    await self.openai_ws.send(json.dumps({
+                        "type": "conversation.item.truncate",
+                        "item_id": "dummy",  # Will fail but helps clear state
+                        "content_index": 0,
+                        "audio_end_ms": 0
+                    }))
+                except:
+                    pass  # Expected to fail, but helps trigger cleanup
+                
+                await asyncio.sleep(0.3)  # Additional buffer time
+                
+                # Now switch voice
                 await self.openai_ws.send(json.dumps({
                     "type": "session.update",
                     "session": {
                         "voice": voice
                     }
                 }))
-                print(f"🎤 [{self.session.session_id[:8]}] Switched to voice: {voice}")
-                await asyncio.sleep(0.3)  # Give time for voice change to apply
+                print(f"✅ [{self.session.session_id[:8]}] Voice switched to: {voice}")
+                await asyncio.sleep(0.5)  # FIX #2: Longer wait for voice change to apply (was 0.3)
+                
             except Exception as e:
                 # Voice switch failed, but continue anyway with stronger instructions
                 print(f"⚠️ [{self.session.session_id[:8]}] Voice switch failed (continuing with instructions): {e}")

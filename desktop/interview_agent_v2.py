@@ -8,6 +8,8 @@ import asyncio
 import json
 import base64
 import websockets
+import ssl
+import certifi
 from datetime import datetime
 
 import sys
@@ -139,7 +141,10 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             headers = self.get_websocket_headers()
             header_list = [(name, value) for name, value in headers.items()]
             
-            async with websockets.connect(ws_url, additional_headers=header_list) as websocket:
+            # Create SSL context with certifi certificates
+            ssl_context = ssl.create_default_context(cafile=certifi.where())
+            
+            async with websockets.connect(ws_url, extra_headers=header_list, ssl=ssl_context) as websocket:
                 # Initialize event dispatcher with context
                 context = {
                     "audio_manager": self.audio_manager,

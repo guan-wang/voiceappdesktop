@@ -1,0 +1,49 @@
+{
+  "session_id": "19617e04-fe4f-4f80-91ca-a9bdd9c6e3f2",
+  "timestamp": "2026-01-28T13:29:24.905003",
+  "report": {
+    "proficiency_level": "A2",
+    "ceiling_phase": "Level-Up",
+    "ceiling_analysis": "The breakdown occurred during the Level-Up phase when the student was asked to elaborate on their coding project, leading to a lack of response (\"안몰라요\").",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 3,
+        "observation": "The student demonstrates basic fluency in responding to simple questions but struggles with more complex prompts, leading to hesitation.",
+        "evidence": "\"저는 왕관비입니다.\" (I am Wang Gwan-bi.)"
+      },
+      {
+        "domain": "Grammar",
+        "rating": 3,
+        "observation": "The student uses simple sentence structures correctly but fails to use appropriate verb forms in more complex contexts.",
+        "evidence": "\"제 취미는 코딩, 자전거 수영해요.\" (My hobbies are coding, bicycle swimming.)"
+      },
+      {
+        "domain": "Lexical",
+        "rating": 2,
+        "observation": "The student uses basic vocabulary but lacks precision and appropriateness in describing activities, leading to ambiguity.",
+        "evidence": "\"자전거 수영해요.\" (bicycle swimming)"
+      },
+      {
+        "domain": "Phonology",
+        "rating": 4,
+        "observation": "Pronunciation is generally clear, but there may be minor issues with fluency in longer responses.",
+        "evidence": "\"안녕하세요.\" (Hello.)"
+      },
+      {
+        "domain": "Coherence",
+        "rating": 2,
+        "observation": "The student struggles to connect ideas logically when asked to elaborate, resulting in a disjointed response.",
+        "evidence": "\"안몰라요.\" (I don't know.)"
+      }
+    ],
+    "starting_module": "Module focusing on expanding vocabulary and complex sentence structures (e.g., B1 level).",
+    "logic_errors_to_debug": [
+      "Verb Form Usage: The student needs to practice using the correct verb forms in context, especially in past and future tenses.",
+      "Specific Vocabulary: The student should work on using more precise terms instead of vague expressions (e.g., replacing \"자전거 수영해요\" with \"자전거 타는 것과 수영하는 것\" for clarity)."
+    ],
+    "optimization_strategy": "Implement \"Shadowing\" exercises where the student listens to and repeats complex sentences to improve fluency and grammatical accuracy."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A2 level. You performed well during the Level-Up phase. The breakdown occurred during the Level-Up phase when the student was asked to elaborate on their coding project, leading to a lack of response (\"안몰라요\"). \nLet me break down the key areas: Your strongest area is phonology with a rating of 4 out of 5. Pronunciation is generally clear, but there may be minor issues with fluency in longer responses. An area to focus on is coherence, rated at 2 out of 5. The student struggles to connect ideas logically when asked to elaborate, resulting in a disjointed response. \nI recommend starting with the Module focusing on expanding vocabulary and complex sentence structures (e.g., B1 level). module. The top patterns to work on are: 1. Verb Form Usage: The student needs to practice using the correct verb forms in context, especially in past and future tenses. 2. Specific Vocabulary: The student should work on using more precise terms instead of vague expressions (e.g., replacing \"자전거 수영해요\" with \"자전거 타는 것과 수영하는 것\" for clarity). \nFor practice, I suggest this exercise: Implement \"Shadowing\" exercises where the student listens to and repeats complex sentences to improve fluency and grammatical accuracy. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 11
+}

@@ -9,38 +9,91 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <h1>🇰🇷 Korean Voice Tutor</h1>
-            <div class="status" id="status">
-                <span class="status-dot"></span>
-                <span class="status-text">Connecting...</span>
+    <!-- Welcome Screen Overlay -->
+    <div class="welcome-overlay" id="welcomeOverlay">
+        <div class="welcome-content">
+            <div class="welcome-header">
+                <h1>🇰🇷 Korean Voice Tutor</h1>
             </div>
-        </header>
+            
+            <div class="welcome-description">
+                <p>Assess your Korean speaking skills through interactive voice conversations. Our AI tutor will have a casual conversation with you, and provide a report with your level of proficiency along with some feedback. </p>
+            </div>
+            
+            <button class="start-button" id="startButton">
+                Start Learning
+            </button>
+            
+            <a href="#" class="beginner-link" id="beginnerLink">But I'm a total beginner</a>
+        </div>
+    </div>
 
-        <!-- Transcript Area -->
-        <div class="transcript-container" id="transcriptContainer">
-            <div class="transcript-welcome">
-                <p>Welcome! Hold the button below to speak in Korean.</p>
-                <p class="transcript-hint">Your conversation will appear here.</p>
+    <!-- Beginner Modal -->
+    <div class="modal-overlay" id="beginnerModal">
+        <div class="modal-content">
+            <h3>👋 Welcome, Beginner!</h3>
+            <p>This app is currently only supporting voice-based assessment for learners with some basics in the target language. Stay tuned for our future release supporting total beginners!</p>
+            <button class="modal-close-button" id="modalCloseButton">Got it</button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Status indicator (top corner) -->
+        <div class="status-indicator" id="statusIndicator">
+            <span class="status-dot"></span>
+            <span class="status-text" id="statusText">AI 선생님</span>
+        </div>
+
+        <!-- AI Transcript Area (Center/Top) -->
+        <div class="ai-transcript-area">
+            <div class="ai-transcript" id="aiTranscript"></div>
+        </div>
+
+        <!-- User Transcript Area (Bottom, above mic) -->
+        <div class="user-transcript-area">
+            <div class="user-transcript" id="userTranscript"></div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-state" id="loadingState">
+            <div class="spinner"></div>
+            <p>Preparing the interview...</p>
+        </div>
+
+        <!-- System Message (Ephemeral) -->
+        <div class="system-message" id="systemMessage"></div>
+        
+        <!-- Loading Overlay (for assessment) -->
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+            <div class="loading-overlay-content">
+                <div class="spinner-large"></div>
+                <p class="loading-text">Generating report</p>
             </div>
         </div>
 
-        <!-- Push-to-Talk Button -->
-        <div class="ptt-container">
+        <!-- Push-to-Talk Button (Sticky Bottom) -->
+        <div class="mic-container">
+            <!-- Tip Message (shown on first entry) -->
+            <div class="mic-tip" id="micTip">
+                Hold the mic button and say "Hello" to get started
+            </div>
+            
             <button 
-                id="pttButton" 
-                class="ptt-button" 
+                id="micButton" 
+                class="mic-button state-inactive" 
                 disabled
                 aria-label="Hold to speak"
             >
-                <div class="ptt-icon">🎤</div>
-                <div class="ptt-text">Hold to Speak</div>
+                <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
             </button>
-            <div class="ptt-hint" id="pttHint">
-                Connecting to server...
-            </div>
+            <div class="mic-hint" id="micHint">버튼을 누르고 말하세요</div>
+        </div>
+        
+        <!-- Next Button (shown after assessment) -->
+        <div class="next-button-container" id="nextButtonContainer" style="display: none;">
+            <button class="next-button" id="nextButton">Next</button>
         </div>
 
         <!-- Audio Player (hidden, for AI responses) -->
