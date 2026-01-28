@@ -48,13 +48,23 @@ class UserSession:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             report_path = os.path.join(reports_dir, f"web_assessment_{timestamp}.json")
             
-            # Save report
+            # Save report with survey structure
             report_dict = {
                 "session_id": self.session_id,
                 "timestamp": datetime.now().isoformat(),
                 "report": report.model_dump() if hasattr(report, 'model_dump') else report,
                 "verbal_summary": verbal_summary,
-                "conversation_length": len(self.conversation_history)
+                "conversation_length": len(self.conversation_history),
+                "survey": {
+                    "completed": False,
+                    "completed_at": None,
+                    "responses": {
+                        "comfort_level": None,
+                        "feedback_usefulness": None,
+                        "name": None,
+                        "email": None
+                    }
+                }
             }
             
             with open(report_path, 'w', encoding='utf-8') as f:
@@ -214,6 +224,63 @@ class SessionStore:
                 
         except Exception as e:
             print(f"⚠️ Error cleaning session {session_id[:8]}: {e}")
+    
+    def append_survey_to_assessment(self, session_id: str, survey_data: dict):
+        """Append survey responses to existing assessment file"""
+        import glob
+        import os
+        import json
+        from datetime import datetime
+        
+        # Get reports directory
+        reports_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "reports")
+        
+        # Find the assessment file for this session
+        pattern = os.path.join(reports_dir, "web_assessment_*.json")
+        files = glob.glob(pattern)
+        
+        # Find file matching session_id
+        target_file = None
+        for filepath in files:
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    if data.get('session_id') == session_id:
+                        target_file = filepath
+                        break
+            except Exception as e:
+                print(f"⚠️ Error reading {filepath}: {e}")
+                continue
+        
+        if not target_file:
+            raise FileNotFoundError(f"No assessment found for session {session_id}")
+        
+        # Read existing data
+        with open(target_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # Add survey data
+        data['survey'] = {
+            "completed": True,
+            "completed_at": datetime.now().isoformat(),
+            "responses": {
+                "comfort_level": survey_data.get("comfort_level"),
+                "feedback_usefulness": survey_data.get("feedback_usefulness"),
+                "name": survey_data.get("name", "").strip(),
+                "email": survey_data.get("email", "").strip()
+            }
+        }
+        
+        # Atomic write with temp file
+        temp_path = target_file + '.tmp'
+        with open(temp_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        
+        # Atomic rename (safe even if process crashes)
+        os.replace(temp_path, target_file)
+        
+        print(f"✅ Survey appended to assessment: {target_file}")
+        return target_file
     
     def get_active_session_count(self) -> int:
         """Get number of active sessions"""

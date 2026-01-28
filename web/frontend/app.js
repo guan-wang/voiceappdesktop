@@ -24,6 +24,9 @@ class KoreanVoiceTutor {
         this.streamingText = '';
         this.streamingInterval = null;
         
+        // Track AI messages for rolling view (keep last 3)
+        this.aiMessages = [];
+        
         // UI elements
         this.micButton = document.getElementById('micButton');
         this.micHint = document.getElementById('micHint');
@@ -44,11 +47,21 @@ class KoreanVoiceTutor {
         this.nextButtonContainer = document.getElementById('nextButtonContainer');
         this.nextButton = document.getElementById('nextButton');
         
+        // Survey elements
+        this.surveyOverlay = document.getElementById('surveyOverlay');
+        this.surveyForm = document.getElementById('surveyForm');
+        this.surveySuccess = document.getElementById('surveySuccess');
+        this.surveySkipLink = document.getElementById('surveySkipLink');
+        this.surveyCloseButton = document.getElementById('surveyCloseButton');
+        
         // Setup welcome screen
         this.setupWelcomeScreen();
         
         // Setup next button
         this.setupNextButton();
+        
+        // Setup survey
+        this.setupSurvey();
     }
     
     setupWelcomeScreen() {
@@ -92,9 +105,97 @@ class KoreanVoiceTutor {
     
     setupNextButton() {
         this.nextButton.addEventListener('click', () => {
-            // Navigate to survey page (placeholder for now)
-            window.location.href = '/survey';
+            console.log('📝 Next button clicked - showing survey');
+            // Hide next button and show survey
+            this.nextButtonContainer.style.display = 'none';
+            this.showSurvey();
         });
+    }
+    
+    setupSurvey() {
+        // Handle survey form submission
+        this.surveyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(this.surveyForm);
+            const responses = {
+                comfort_level: formData.get('comfort_level'),
+                feedback_usefulness: formData.get('feedback_usefulness'),
+                name: formData.get('name'),
+                email: formData.get('email')
+            };
+            
+            console.log('📋 Survey responses:', responses);
+            
+            // Disable submit button
+            const submitBtn = this.surveyForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+            
+            try {
+                // Send to backend
+                const response = await fetch('/api/submit_survey', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: this.sessionId,
+                        responses: responses
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    console.log('✅ Survey saved:', result);
+                    this.showSurveySuccess();
+                } else {
+                    console.error('❌ Survey save failed:', result);
+                    alert('Failed to save survey. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Save My Report & Start Learning 🚀';
+                }
+            } catch (error) {
+                console.error('❌ Survey error:', error);
+                alert('Failed to save survey. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save My Report & Start Learning 🚀';
+            }
+        });
+        
+        // Handle skip link
+        this.surveySkipLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('⏭️ Survey skipped');
+            this.closeSurvey();
+        });
+        
+        // Handle close button (after success)
+        this.surveyCloseButton.addEventListener('click', () => {
+            this.closeSurvey();
+        });
+    }
+    
+    showSurvey() {
+        this.surveyOverlay.style.display = 'flex';
+        this.surveyForm.style.display = 'flex';
+        this.surveySuccess.style.display = 'none';
+        console.log('📋 Survey displayed');
+    }
+    
+    showSurveySuccess() {
+        this.surveyForm.style.display = 'none';
+        this.surveySuccess.style.display = 'block';
+    }
+    
+    closeSurvey() {
+        this.surveyOverlay.style.display = 'none';
+        console.log('👋 Survey closed - reloading app');
+        // Reload to start fresh
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
     }
     
     async init() {
@@ -419,23 +520,48 @@ class KoreanVoiceTutor {
         }, duration);
     }
     
-    // Stream AI transcript character by character
+    // Stream AI transcript character by character with rolling view
     streamAITranscript(text) {
         if (this.streamingInterval) {
             clearInterval(this.streamingInterval);
         }
         
-        this.aiTranscript.textContent = '';
-        let charIndex = 0;
+        // Add new message to array
+        this.aiMessages.push(text);
         
-        this.streamingInterval = setInterval(() => {
-            if (charIndex < text.length) {
-                this.aiTranscript.textContent += text[charIndex];
-                charIndex++;
+        // Keep only last 3 messages
+        if (this.aiMessages.length > 3) {
+            this.aiMessages.shift();
+        }
+        
+        // Clear and rebuild the transcript container
+        this.aiTranscript.innerHTML = '';
+        
+        // Add all messages (showing last 3)
+        this.aiMessages.forEach((msg, index) => {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'ai-transcript-message';
+            messageDiv.textContent = '';
+            this.aiTranscript.appendChild(messageDiv);
+            
+            // Stream only the latest message, show others instantly
+            if (index === this.aiMessages.length - 1) {
+                // Stream the latest message character by character
+                let charIndex = 0;
+                this.streamingInterval = setInterval(() => {
+                    if (charIndex < msg.length) {
+                        messageDiv.textContent += msg[charIndex];
+                        charIndex++;
+                    } else {
+                        clearInterval(this.streamingInterval);
+                        this.streamingInterval = null;
+                    }
+                }, 30); // 30ms per character
             } else {
-                clearInterval(this.streamingInterval);
+                // Show older messages instantly
+                messageDiv.textContent = msg;
             }
-        }, 30); // 30ms per character
+        });
     }
     
     // Stream user transcript character by character

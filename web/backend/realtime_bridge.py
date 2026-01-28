@@ -620,19 +620,6 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                     self.response_in_progress = False  # Force clear
                     await asyncio.sleep(0.5)  # FIX #2: Longer wait
                 
-                # FIX #4: Clear conversation output items to ensure clean state
-                try:
-                    await self.openai_ws.send(json.dumps({
-                        "type": "conversation.item.truncate",
-                        "item_id": "dummy",  # Will fail but helps clear state
-                        "content_index": 0,
-                        "audio_end_ms": 0
-                    }))
-                except:
-                    pass  # Expected to fail, but helps trigger cleanup
-                
-                await asyncio.sleep(0.3)  # Additional buffer time
-                
                 # Now switch voice
                 await self.openai_ws.send(json.dumps({
                     "type": "session.update",
@@ -646,6 +633,14 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             except Exception as e:
                 # Voice switch failed, but continue anyway with stronger instructions
                 print(f"⚠️ [{self.session.session_id[:8]}] Voice switch failed (continuing with instructions): {e}")
+        
+        # Send transcript to client IMMEDIATELY (before OpenAI responds)
+        # This prevents lag between audio and transcript display
+        await self.send_to_client({
+            "type": "ai_transcript",
+            "text": text  # Send the actual text, not the instruction
+        })
+        print(f"📝 [{self.session.session_id[:8]}] Sent transcript to client (pre-audio)")
         
         self.response_in_progress = True
         response_event = {

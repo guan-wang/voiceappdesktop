@@ -8,9 +8,9 @@ import sys
 import asyncio
 import signal
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from dotenv import load_dotenv
 import uvicorn
 
@@ -75,11 +75,51 @@ async def read_root():
     return FileResponse(index_path)
 
 
-@app.get("/survey")
-async def read_survey():
-    """Serve the survey page"""
-    survey_path = os.path.join(frontend_dir, "survey.html")
-    return FileResponse(survey_path)
+@app.post("/api/submit_survey")
+async def submit_survey(request: Request):
+    """Save survey responses to assessment JSON"""
+    try:
+        data = await request.json()
+        session_id = data.get("session_id")
+        responses = data.get("responses")
+        
+        if not session_id:
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "message": "session_id required"}
+            )
+        
+        if not responses:
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "message": "responses required"}
+            )
+        
+        # Append survey to assessment file
+        filepath = session_store.append_survey_to_assessment(session_id, responses)
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "success",
+                "message": "Survey saved successfully",
+                "file": os.path.basename(filepath)
+            }
+        )
+        
+    except FileNotFoundError as e:
+        return JSONResponse(
+            status_code=404,
+            content={"status": "error", "message": str(e)}
+        )
+    except Exception as e:
+        print(f"❌ Error saving survey: {e}")
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": "Internal server error"}
+        )
 
 
 @app.get("/health")

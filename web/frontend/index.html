@@ -99,6 +99,104 @@
         <!-- Audio Player (hidden, for AI responses) -->
         <audio id="audioPlayer" style="display: none;"></audio>
     </div>
+    
+    <!-- Survey Screen -->
+    <div class="survey-overlay" id="surveyOverlay" style="display: none;">
+        <div class="survey-container">
+            <div class="survey-header">
+                <h2>📋 Quick Feedback</h2>
+                <p>Help us improve your learning experience</p>
+            </div>
+            
+            <form id="surveyForm" class="survey-form">
+                <!-- Question 1 -->
+                <div class="survey-question">
+                    <label class="question-label">How did it feel to speak with the AI tutor?</label>
+                    <div class="choice-group">
+                        <label class="choice-option">
+                            <input type="radio" name="comfort_level" value="natural" required>
+                            <span class="choice-content">
+                                <span class="choice-emoji">😊</span>
+                                <span class="choice-text">Natural & Comfortable</span>
+                            </span>
+                        </label>
+                        <label class="choice-option">
+                            <input type="radio" name="comfort_level" value="okay" required>
+                            <span class="choice-content">
+                                <span class="choice-emoji">😐</span>
+                                <span class="choice-text">A bit robotic, but okay</span>
+                            </span>
+                        </label>
+                        <label class="choice-option">
+                            <input type="radio" name="comfort_level" value="awkward" required>
+                            <span class="choice-content">
+                                <span class="choice-emoji">😬</span>
+                                <span class="choice-text">Awkward or Frustrating</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Question 2 -->
+                <div class="survey-question">
+                    <label class="question-label">Was the feedback you received insightful?</label>
+                    <div class="choice-group">
+                        <label class="choice-option">
+                            <input type="radio" name="feedback_usefulness" value="very_insightful" required>
+                            <span class="choice-content">
+                                <span class="choice-emoji">💡</span>
+                                <span class="choice-text"><strong>Very!</strong> I know exactly what to improve now.</span>
+                            </span>
+                        </label>
+                        <label class="choice-option">
+                            <input type="radio" name="feedback_usefulness" value="okay" required>
+                            <span class="choice-content">
+                                <span class="choice-emoji">✅</span>
+                                <span class="choice-text"><strong>It was okay.</strong> Confirmed what I already knew.</span>
+                            </span>
+                        </label>
+                        <label class="choice-option">
+                            <input type="radio" name="feedback_usefulness" value="not_really" required>
+                            <span class="choice-content">
+                                <span class="choice-emoji">🤷</span>
+                                <span class="choice-text"><strong>Not really.</strong> I'm still not sure where I stand.</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Question 3 -->
+                <div class="survey-question">
+                    <label class="question-label">Want to keep this momentum going?</label>
+                    <p class="question-subtitle">Enter your details to pick up right where we left off and start improving today.</p>
+                    
+                    <div class="form-group">
+                        <input type="text" id="surveyName" name="name" class="text-input" placeholder="Your Name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="email" id="surveyEmail" name="email" class="text-input" placeholder="Email Address" required>
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="survey-submit-button">
+                    Save My Report & Start Learning 🚀
+                </button>
+                
+                <!-- Skip Link -->
+                <a href="#" class="survey-skip-link" id="surveySkipLink">Skip for now</a>
+            </form>
+            
+            <!-- Success Message -->
+            <div class="survey-success" id="surveySuccess" style="display: none;">
+                <div class="success-icon">✅</div>
+                <h3>Thank You!</h3>
+                <p>Your feedback has been saved. We'll be in touch soon!</p>
+                <button class="close-button" id="surveyCloseButton">Close</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="/static/audio.js"></script>
