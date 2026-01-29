@@ -24,9 +24,6 @@ class KoreanVoiceTutor {
         this.streamingText = '';
         this.streamingInterval = null;
         
-        // Track AI messages for rolling view (keep last 3)
-        this.aiMessages = [];
-        
         // UI elements
         this.micButton = document.getElementById('micButton');
         this.micHint = document.getElementById('micHint');
@@ -420,12 +417,10 @@ class KoreanVoiceTutor {
             navigator.vibrate(50);
         }
         
-        // Start audio recording
+        // Start audio recording (don't set callback yet, will send in stopRecording if duration is valid)
         try {
             console.log('🎤 Starting recording...');
-            this.audioManager.startRecording((audioData) => {
-                this.sendAudio(audioData);
-            });
+            this.audioManager.startRecording();
         } catch (error) {
             console.error('❌ Recording error:', error);
             this.showEphemeralMessage('Recording failed. Please try again.');
@@ -434,7 +429,7 @@ class KoreanVoiceTutor {
         }
     }
     
-    stopRecording() {
+    async stopRecording() {
         if (!this.isRecording) {
             return;
         }
@@ -445,7 +440,9 @@ class KoreanVoiceTutor {
         if (holdDuration < this.minHoldDuration) {
             console.log('⚠️ Too short:', holdDuration, 'ms');
             this.showEphemeralMessage('Hold the button longer to speak');
-            this.audioManager.stopRecording();
+            
+            // Discard the recording without sending
+            await this.audioManager.stopRecording(true); // Pass true to discard
             this.isRecording = false;
             this.setMicButtonState('ready');
             this.micHint.textContent = '버튼을 누르고 말하세요';
@@ -458,20 +455,30 @@ class KoreanVoiceTutor {
             this.showEphemeralMessage('Message too long. Please speak more concisely.');
         }
         
-        // Stop recording
-        this.audioManager.stopRecording();
+        // Stop recording and get audio data
+        const audioData = await this.audioManager.stopRecording();
         this.isRecording = false;
         
-        // Visual feedback
-        this.setMicButtonState('inactive');
-        this.micHint.textContent = '처리 중...';
-        
-        // Haptic feedback
-        if (navigator.vibrate) {
-            navigator.vibrate([50, 50, 50]);
+        // Only send if we have valid audio data
+        if (audioData) {
+            // Visual feedback
+            this.setMicButtonState('inactive');
+            this.micHint.textContent = '처리 중...';
+            
+            // Haptic feedback
+            if (navigator.vibrate) {
+                navigator.vibrate([50, 50, 50]);
+            }
+            
+            console.log('✅ Recorded:', holdDuration, 'ms');
+            
+            // Send audio
+            this.sendAudio(audioData);
+        } else {
+            // No valid audio, reset to ready state
+            this.setMicButtonState('ready');
+            this.micHint.textContent = '버튼을 누르고 말하세요';
         }
-        
-        console.log('✅ Recorded:', holdDuration, 'ms');
     }
     
     sendAudio(audioData) {
@@ -520,48 +527,30 @@ class KoreanVoiceTutor {
         }, duration);
     }
     
-    // Stream AI transcript character by character with rolling view
+    // Stream AI transcript character by character
     streamAITranscript(text) {
         if (this.streamingInterval) {
             clearInterval(this.streamingInterval);
         }
         
-        // Add new message to array
-        this.aiMessages.push(text);
+        // Clear previous message
+        this.aiTranscript.textContent = '';
         
-        // Keep only last 3 messages
-        if (this.aiMessages.length > 3) {
-            this.aiMessages.shift();
-        }
-        
-        // Clear and rebuild the transcript container
-        this.aiTranscript.innerHTML = '';
-        
-        // Add all messages (showing last 3)
-        this.aiMessages.forEach((msg, index) => {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'ai-transcript-message';
-            messageDiv.textContent = '';
-            this.aiTranscript.appendChild(messageDiv);
-            
-            // Stream only the latest message, show others instantly
-            if (index === this.aiMessages.length - 1) {
-                // Stream the latest message character by character
-                let charIndex = 0;
-                this.streamingInterval = setInterval(() => {
-                    if (charIndex < msg.length) {
-                        messageDiv.textContent += msg[charIndex];
-                        charIndex++;
-                    } else {
-                        clearInterval(this.streamingInterval);
-                        this.streamingInterval = null;
-                    }
-                }, 30); // 30ms per character
+        // Stream character by character
+        let charIndex = 0;
+        this.streamingInterval = setInterval(() => {
+            if (charIndex < text.length) {
+                this.aiTranscript.textContent += text[charIndex];
+                
+                // Auto-scroll to show latest text (bottom)
+                this.aiTranscript.scrollTop = this.aiTranscript.scrollHeight;
+                
+                charIndex++;
             } else {
-                // Show older messages instantly
-                messageDiv.textContent = msg;
+                clearInterval(this.streamingInterval);
+                this.streamingInterval = null;
             }
-        });
+        }, 30); // 30ms per character
     }
     
     // Stream user transcript character by character

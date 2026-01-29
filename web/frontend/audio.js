@@ -67,7 +67,7 @@ class AudioManager {
         }
     }
     
-    startRecording(onDataAvailable) {
+    startRecording() {
         if (!this.stream) {
             console.error('❌ Stream not initialized');
             throw new Error('Audio not initialized. Please refresh the page.');
@@ -115,23 +115,6 @@ class AudioManager {
             }
         };
         
-        // When recording stops, process the audio
-        this.mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(this.chunks, { type: 'audio/webm' });
-            
-            // Convert to PCM16 and base64
-            try {
-                const base64Audio = await this.convertToBase64PCM(audioBlob);
-                if (onDataAvailable) {
-                    onDataAvailable(base64Audio);
-                }
-            } catch (error) {
-                console.error('❌ Error converting audio:', error);
-            }
-            
-            this.chunks = [];
-        };
-        
         // Add error handler for MediaRecorder
         this.mediaRecorder.onerror = (event) => {
             console.error('❌ MediaRecorder error:', event.error);
@@ -147,11 +130,40 @@ class AudioManager {
         }
     }
     
-    stopRecording() {
-        if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
-            this.mediaRecorder.stop();
-            console.log('🎤 Recording stopped');
+    async stopRecording(discard = false) {
+        if (!this.mediaRecorder || this.mediaRecorder.state !== 'recording') {
+            return null;
         }
+        
+        return new Promise((resolve) => {
+            if (discard) {
+                // Just stop and discard
+                this.mediaRecorder.onstop = () => {
+                    console.log('🗑️ Recording discarded');
+                    this.chunks = [];
+                    resolve(null);
+                };
+                this.mediaRecorder.stop();
+            } else {
+                // Stop and process audio
+                this.mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(this.chunks, { type: 'audio/webm' });
+                    
+                    // Convert to PCM16 and base64
+                    try {
+                        const base64Audio = await this.convertToBase64PCM(audioBlob);
+                        this.chunks = [];
+                        resolve(base64Audio);
+                    } catch (error) {
+                        console.error('❌ Error converting audio:', error);
+                        this.chunks = [];
+                        resolve(null);
+                    }
+                };
+                this.mediaRecorder.stop();
+                console.log('🛑 Recording stopped');
+            }
+        });
     }
     
     async convertToBase64PCM(audioBlob) {
