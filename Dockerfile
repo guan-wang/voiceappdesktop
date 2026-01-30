@@ -14,8 +14,11 @@ COPY web/frontend/ ./frontend/
 # Create reports directory
 RUN mkdir -p backend/reports
 
-EXPOSE 8080
-
+# Add /app to Python path so 'core' can be imported
+ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "backend/server.py"]
+EXPOSE 8080
+
+# Run from /app directory with proper module path
+CMD ["python", "-m", "backend.server"]
