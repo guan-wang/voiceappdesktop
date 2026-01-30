@@ -1,0 +1,53 @@
+{
+  "session_id": "2f00f154-a12d-48f4-8ffc-84b153195100",
+  "timestamp": "2026-01-30T15:02:15.115896",
+  "report": {
+    "proficiency_level": "A2",
+    "ceiling_phase": "Level-Up",
+    "ceiling_analysis": "The student struggled during the Level-Up phase when asked to elaborate on their experiences, indicating a lack of comfort with more complex narrative tasks.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 3,
+        "observation": "The student demonstrates moderate fluency but hesitates when asked to elaborate on experiences, leading to longer pauses.",
+        "evidence": "User: '몰라요. 이거 조금 어려워요.'"
+      },
+      {
+        "domain": "Grammar",
+        "rating": 3,
+        "observation": "The student uses simple sentence structures but struggles with more complex forms, leading to incomplete thoughts.",
+        "evidence": "User: '자전거 탔고 아름다워 뷰 너무 좋아요.'"
+      },
+      {
+        "domain": "Lexical",
+        "rating": 3,
+        "observation": "The vocabulary used is basic and lacks specificity, relying on generic terms rather than descriptive language.",
+        "evidence": "User: '아름다워 뷰 너무 좋아요.'"
+      },
+      {
+        "domain": "Coherence",
+        "rating": 2,
+        "observation": "The student has difficulty organizing thoughts coherently when prompted to provide more detail, leading to fragmented responses.",
+        "evidence": "User: '아몰라야' and '몰라요. 이거 조금 어려워요.'"
+      }
+    ],
+    "starting_module": "Basic Narrative Skills",
+    "logic_errors_to_debug": [
+      "Expand vocabulary to include more descriptive terms for experiences.",
+      "Practice forming complex sentences to improve narrative coherence."
+    ],
+    "optimization_strategy": "Engage in Picture Narration exercises to encourage detailed descriptions and improve fluency."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A2 level. You performed well during the Level-Up phase. The student struggled during the Level-Up phase when asked to elaborate on their experiences, indicating a lack of comfort with more complex narrative tasks. \nLet me break down the key areas: Your strongest area is fluency with a rating of 3 out of 5. The student demonstrates moderate fluency but hesitates when asked to elaborate on experiences, leading to longer pauses. An area to focus on is coherence, rated at 2 out of 5. The student has difficulty organizing thoughts coherently when prompted to provide more detail, leading to fragmented responses. \nI recommend starting with the Basic Narrative Skills module. The top patterns to work on are: 1. Expand vocabulary to include more descriptive terms for experiences. 2. Practice forming complex sentences to improve narrative coherence. \nFor practice, I suggest this exercise: Engage in Picture Narration exercises to encourage detailed descriptions and improve fluency. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 15,
+  "survey": {
+    "completed": true,
+    "completed_at": "2026-01-30T15:03:40.680822",
+    "responses": {
+      "comfort_level": "natural",
+      "feedback_usefulness": "very_insightful",
+      "name": "Guan",
+      "email": "guan.wang.se@gmail.com"
+    }
+  }
+}

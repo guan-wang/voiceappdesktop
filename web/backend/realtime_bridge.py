@@ -17,8 +17,29 @@ import sys
 # Add paths to import core modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from core import AssessmentAgent, AssessmentStateMachine, AssessmentState
-from core.tools.interview_guidance import get_interview_guidance
+from core import AssessmentStateMachine, AssessmentState
+from shared_agents import get_assessment_agent
+
+
+# Module-level cache for interview system prompt
+_INTERVIEW_SYSTEM_PROMPT_CACHE = None
+
+
+def _load_interview_system_prompt() -> str:
+    """Load interview system prompt from file and cache it"""
+    global _INTERVIEW_SYSTEM_PROMPT_CACHE
+    if _INTERVIEW_SYSTEM_PROMPT_CACHE is None:
+        import os
+        core_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        prompt_path = os.path.join(core_dir, "core", "resources", "interview_system_prompt.txt")
+        prompt_path = os.path.normpath(prompt_path)
+        
+        with open(prompt_path, 'r', encoding='utf-8') as f:
+            _INTERVIEW_SYSTEM_PROMPT_CACHE = f.read().strip()
+        
+        print(f"📋 Interview system prompt loaded ({len(_INTERVIEW_SYSTEM_PROMPT_CACHE)} chars)")
+    
+    return _INTERVIEW_SYSTEM_PROMPT_CACHE
 
 
 class RealtimeBridge:
@@ -35,7 +56,8 @@ class RealtimeBridge:
         self.session = session
         self.client_ws = client_websocket
         self.openai_ws = None
-        self.assessment_agent = AssessmentAgent()
+        # Assessment agent will be loaded lazily when needed (don't block connection)
+        self._assessment_agent = None
         
         # Initialize assessment state machine
         self.session.assessment_state = AssessmentStateMachine()
@@ -44,34 +66,24 @@ class RealtimeBridge:
         self.current_response_id = None
         self.response_in_progress = False  # Track if AI is currently responding
         
+        # Audio chunk tracking (to avoid excessive logging)
+        self.audio_chunk_count = 0
+        self.audio_total_bytes = 0
+        
         # Track background tasks for cleanup
         self.background_tasks = set()
         self.is_shutting_down = False
     
+    @property
+    def assessment_agent(self):
+        """Lazy-load the shared assessment agent when first needed"""
+        if self._assessment_agent is None:
+            self._assessment_agent = get_assessment_agent()
+        return self._assessment_agent
+    
     def get_system_instructions(self):
-        """System instructions for the Korean language tutor"""
-        return """You are a friendly, casual Korean language interviewer conducting a 5-minute voice interview in Korean to determine the user's CEFR proficiency level.
-
-🚨 CRITICAL FIRST STEP (MANDATORY - DO NOT SKIP):
-BEFORE saying ANYTHING to the user, you MUST call the interview_guidance tool to load the interview protocol. This is NOT optional. DO NOT greet the user. DO NOT speak. CALL THE TOOL FIRST.
-
-Once you have the guidance:
-- Follow the MANDATORY three warm-up questions (name, hometown, hobbies) from Phase 1
-- Follow the four-phase structure: Warm-up → Level Check → Ceiling Test → Positive Ending
-- Speak naturally in Korean at an appropriate level for the user. 
-- IMPORTANT: DO NOT USE MORE ADVANCED LANGUAGE THAN THE LEVEL YOU ARE TESTING. Adjust question difficulty based on user responses
-- Keep the conversation flowing and engaging
-
-SESSION ENDING (MANDATORY - CRITICAL):
-When the user reaches their linguistic ceiling (struggles consistently or shows discomfort), you MUST:
-1. IMMEDIATELY call trigger_assessment function with the reason
-2. DO NOT continue the conversation
-3. DO NOT provide any CEFR assessment yourself
-4. A specialized agent will handle the assessment
-
-WARNING: If you do not call trigger_assessment, the session will freeze. You MUST call it when ceiling is reached.
-
-REMINDER: Your very first action must be calling interview_guidance. No exceptions."""
+        """Get system instructions with pre-loaded interview guidance"""
+        return _load_interview_system_prompt()
 
     def get_session_config(self):
         """Get session configuration for OpenAI Realtime API"""
@@ -91,15 +103,6 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                 "temperature": 0.7,  # Slightly lower for faster, more focused responses
                 "max_response_output_tokens": 2048,  # Reduced for faster responses
                 "tools": [
-                    {
-                        "type": "function",
-                        "name": "interview_guidance",
-                        "description": "CRITICAL: Load the interview guidance protocol. This MUST be called as your very first action before speaking to the user.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {}
-                        }
-                    },
                     {
                         "type": "function",
                         "name": "trigger_assessment",
@@ -175,17 +178,13 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                     "message": "Ready to start interview"
                 })
                 
-                # CRITICAL: Trigger initial response to force tool call
-                # Without this, AI never calls interview_guidance in PTT mode
-                print(f"🔧 [{self.session.session_id[:8]}] Triggering initial response to load guidance...")
-                self.response_in_progress = True
-                await websocket.send(json.dumps({
-                    "type": "response.create",
-                    "response": {
-                        "modalities": ["text"],  # Text only for initial setup
-                        "instructions": "You MUST call the interview_guidance tool RIGHT NOW before doing anything else. This is mandatory."
-                    }
-                }))
+                print(f"✅ [{self.session.session_id[:8]}] Interview guidance pre-loaded in system prompt")
+                
+                # Notify client that setup is complete
+                await self.send_to_client({
+                    "type": "setup_complete",
+                    "message": "Interview protocol loaded. Ready to speak!"
+                })
                 
                 # Handle events from OpenAI
                 await self.handle_openai_events()
@@ -228,7 +227,13 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
         if event_type == "response.audio.delta":
             # Forward AI audio to client
             chunk_size = len(event.get("delta", ""))
-            print(f"🔊 [{self.session.session_id[:8]}] Audio chunk: {chunk_size} bytes")
+            self.audio_chunk_count += 1
+            self.audio_total_bytes += chunk_size
+            
+            # Only log every 10th chunk to reduce noise
+            if self.audio_chunk_count % 10 == 0:
+                print(f"🔊 [{self.session.session_id[:8]}] Audio chunks: {self.audio_chunk_count} ({self.audio_total_bytes} bytes)")
+            
             await self.send_to_client({
                 "type": "ai_audio",
                 "audio": event.get("delta", ""),
@@ -236,9 +241,15 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             })
         
         elif event_type == "response.audio.done":
-            # Audio generation complete
-            print(f"✅ [{self.session.session_id[:8]}] Audio generation done")
-            pass  # Just log, no action needed
+            # Audio generation complete - notify client
+            print(f"✅ [{self.session.session_id[:8]}] Audio generation done - sent {self.audio_chunk_count} chunks ({self.audio_total_bytes} bytes)")
+            await self.send_to_client({
+                "type": "ai_audio_done",
+                "response_id": event.get("response_id")
+            })
+            # Reset counters for next response
+            self.audio_chunk_count = 0
+            self.audio_total_bytes = 0
         
         elif event_type == "response.audio_transcript.delta":
             # Accumulate transcript
@@ -352,19 +363,7 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             print(f"⚠️ [{self.session.session_id[:8]}] No function name found in event!")
             return
         
-        if function_name == "interview_guidance":
-            guidance_text = get_interview_guidance()
-            self.session.guidance_loaded = True
-            await self.send_tool_output(call_id, guidance_text)
-            print(f"🧭 [{self.session.session_id[:8]}] Interview guidance loaded")
-            
-            # Notify client that setup is complete
-            await self.send_to_client({
-                "type": "setup_complete",
-                "message": "Interview protocol loaded. Ready for conversation!"
-            })
-        
-        elif function_name == "trigger_assessment":
+        if function_name == "trigger_assessment":
             print(f"🔔 [{self.session.session_id[:8]}] trigger_assessment called!")
             
             # Extract reason

@@ -1,0 +1,59 @@
+{
+  "session_id": "b5609f5d-8850-4951-bd4d-183d9e15640d",
+  "timestamp": "2026-01-30T14:31:44.893890",
+  "report": {
+    "proficiency_level": "A1",
+    "ceiling_phase": "Level-Up",
+    "ceiling_analysis": "The breakdown occurred during the Level-Up phase, where the student struggled to provide a narrative response.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 2,
+        "observation": "The student displayed hesitance and required prompting to respond.",
+        "evidence": "\"아, 몰라요. 죄송합니다.\""
+      },
+      {
+        "domain": "Grammar",
+        "rating": 3,
+        "observation": "Basic grammatical structures were used correctly, but there was a lack of complexity.",
+        "evidence": "\"제 고향이 할빈이에요.\""
+      },
+      {
+        "domain": "Lexical",
+        "rating": 2,
+        "observation": "Vocabulary was limited and generic; specific terms were not utilized.",
+        "evidence": "\"제 취미는 수영, 자전거, 골프예요.\""
+      },
+      {
+        "domain": "Phonology",
+        "rating": 4,
+        "observation": "Pronunciation was clear, but there were minor issues with intonation.",
+        "evidence": "N/A"
+      },
+      {
+        "domain": "Coherence",
+        "rating": 2,
+        "observation": "The student struggled to connect ideas and provide a coherent narrative.",
+        "evidence": "\"아, 몰라요. 죄송합니다.\""
+      }
+    ],
+    "starting_module": "Module focused on expanding vocabulary and narrative skills (e.g., describing experiences).",
+    "logic_errors_to_debug": [
+      "Difficulty in providing detailed responses (e.g., \"아, 몰라요. 죄송합니다.\" indicates a lack of narrative ability).",
+      "Limited vocabulary usage (e.g., using generic terms like \"수영, 자전거, 골프\" without elaboration)."
+    ],
+    "optimization_strategy": "Implement \"Picture Narration\" exercises where the student describes a series of images related to their hobbies or experiences to encourage narrative development and vocabulary expansion."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A1 level. You performed well during the Level-Up phase. The breakdown occurred during the Level-Up phase, where the student struggled to provide a narrative response. \nLet me break down the key areas: Your strongest area is phonology with a rating of 4 out of 5. Pronunciation was clear, but there were minor issues with intonation. An area to focus on is coherence, rated at 2 out of 5. The student struggled to connect ideas and provide a coherent narrative. \nI recommend starting with the Module focused on expanding vocabulary and narrative skills (e.g., describing experiences). module. The top patterns to work on are: 1. Difficulty in providing detailed responses (e.g., \"아, 몰라요. 죄송합니다.\" indicates a lack of narrative ability). 2. Limited vocabulary usage (e.g., using generic terms like \"수영, 자전거, 골프\" without elaboration). \nFor practice, I suggest this exercise: Implement \"Picture Narration\" exercises where the student describes a series of images related to their hobbies or experiences to encourage narrative development and vocabulary expansion. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 12,
+  "survey": {
+    "completed": false,
+    "completed_at": null,
+    "responses": {
+      "comfort_level": null,
+      "feedback_usefulness": null,
+      "name": null,
+      "email": null
+    }
+  }
+}

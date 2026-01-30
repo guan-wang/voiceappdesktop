@@ -4,7 +4,7 @@ import asyncio
 import json
 from typing import Dict, Any
 from .base_handler import BaseEventHandler
-from assessment_state_machine import AssessmentState
+from core import AssessmentState
 
 
 class ResponseEventHandler(BaseEventHandler):

@@ -19,6 +19,9 @@ class AudioManager {
         // For gapless playback
         this.nextStartTime = 0;
         this.scheduledSources = [];
+        
+        // Track if server finished sending audio
+        this.audioGenerationComplete = false;
     }
     
     async initialize() {
@@ -223,12 +226,25 @@ class AudioManager {
         return window.btoa(binary);
     }
     
+    markAudioGenerationComplete() {
+        console.log('🏁 Server marked audio generation as complete');
+        this.audioGenerationComplete = true;
+    }
+    
     async playAudioChunk(base64Audio) {
+        // Resume audio context if suspended (browser autoplay policy)
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+            console.log('⚠️ Audio context suspended, resuming...');
+            await this.audioContext.resume();
+            console.log('✅ Audio context resumed');
+        }
+        
         // Queue audio for playback
         this.audioQueue.push(base64Audio);
-        console.log(`📥 Audio chunk queued (queue size: ${this.audioQueue.length})`);
+        console.log(`📥 Audio chunk received (queue: ${this.audioQueue.length}, playing: ${this.isPlaying}, scheduled: ${this.scheduledSources.length})`);
         
         if (!this.isPlaying) {
+            console.log('🎬 Starting audio queue processing');
             this.processAudioQueue();
         }
     }
@@ -236,17 +252,23 @@ class AudioManager {
     async processAudioQueue() {
         if (this.audioQueue.length === 0) {
             this.isPlaying = false;
-            console.log('✅ Audio queue empty - playback complete');
-            // Notify app that audio actually finished playing
-            if (window.app && window.app.onAudioPlaybackComplete) {
-                window.app.onAudioPlaybackComplete();
+            console.log(`✅ Audio queue empty (${this.scheduledSources.length} sources still playing)`);
+            
+            // Only notify completion if ALL sources have finished playing
+            if (this.scheduledSources.length === 0) {
+                console.log('✅ All audio playback complete');
+                if (window.app && window.app.onAudioPlaybackComplete) {
+                    window.app.onAudioPlaybackComplete();
+                }
             }
             return;
         }
         
         this.isPlaying = true;
         const base64Audio = this.audioQueue.shift();
-        console.log(`▶️ Playing audio chunk (${this.audioQueue.length} remaining in queue)`);
+        const chunkId = Date.now() + Math.random(); // Unique ID for tracking
+        
+        console.log(`▶️ [Chunk ${chunkId.toFixed(0)}] Processing chunk (${this.audioQueue.length} remaining in queue, ${this.scheduledSources.length} playing)`);
         
         try {
             // Decode base64 to array buffer
@@ -282,6 +304,9 @@ class AudioManager {
                 this.nextStartTime = currentTime;
             }
             
+            const scheduledTime = this.nextStartTime;
+            console.log(`🎵 [Chunk ${chunkId.toFixed(0)}] Scheduling at ${scheduledTime.toFixed(3)}s, duration ${chunkDuration.toFixed(3)}s`);
+            
             // Schedule playback at precise time
             source.start(this.nextStartTime);
             
@@ -290,6 +315,8 @@ class AudioManager {
             
             // Clean up when finished
             source.onended = () => {
+                console.log(`✅ [Chunk ${chunkId.toFixed(0)}] Finished playing at ${this.audioContext.currentTime.toFixed(3)}s`);
+                
                 // Remove from scheduled sources
                 const index = this.scheduledSources.indexOf(source);
                 if (index > -1) {
@@ -304,7 +331,7 @@ class AudioManager {
             this.scheduledSources.push(source);
             
         } catch (error) {
-            console.error('❌ Error playing audio chunk:', error);
+            console.error(`❌ [Chunk ${chunkId.toFixed(0)}] Error playing audio chunk:`, error);
             console.error('Error details:', {
                 message: error.message,
                 stack: error.stack,
@@ -315,6 +342,7 @@ class AudioManager {
     }
     
     clearQueue() {
+        console.log('🧹 Clearing audio queue');
         this.audioQueue = [];
         
         // Stop all scheduled audio sources
@@ -327,9 +355,10 @@ class AudioManager {
         });
         this.scheduledSources = [];
         
-        // Reset timing
+        // Reset timing and flags
         this.nextStartTime = 0;
         this.isPlaying = false;
+        this.audioGenerationComplete = false;
     }
     
     cleanup() {

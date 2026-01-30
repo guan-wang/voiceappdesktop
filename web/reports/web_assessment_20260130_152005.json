@@ -1,0 +1,53 @@
+{
+  "session_id": "5405b37f-0463-4e42-8d7a-e90809969d61",
+  "timestamp": "2026-01-30T15:20:05.031252",
+  "report": {
+    "proficiency_level": "A1",
+    "ceiling_phase": "Warm-up",
+    "ceiling_analysis": "The student struggled during the Warm-up phase, particularly with providing information about hobbies and personal experiences.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 2,
+        "observation": "The student provided very short responses and showed hesitation, particularly when asked to elaborate on personal experiences.",
+        "evidence": "User: 제 취미는 진짜 없어요."
+      },
+      {
+        "domain": "Grammar",
+        "rating": 2,
+        "observation": "The student used simple sentence structures but struggled with more complex responses, leading to incomplete thoughts.",
+        "evidence": "User: 아니에요."
+      },
+      {
+        "domain": "Lexical",
+        "rating": 2,
+        "observation": "The vocabulary used was very basic and lacked specificity, with frequent use of generic terms.",
+        "evidence": "User: 몰라요."
+      },
+      {
+        "domain": "Coherence",
+        "rating": 2,
+        "observation": "Responses lacked logical flow and connection to the questions asked, indicating difficulty in maintaining a coherent discourse.",
+        "evidence": "User: 어디에 또? 집에 있어?"
+      }
+    ],
+    "starting_module": "A1 - Basic Communication Skills",
+    "logic_errors_to_debug": [
+      "Expand vocabulary related to personal interests and experiences.",
+      "Practice forming complete sentences to express thoughts."
+    ],
+    "optimization_strategy": "Engage in Picture Narration exercises to describe images related to hobbies and daily activities."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A1 level. You performed well during the Warm-up phase. The student struggled during the Warm-up phase, particularly with providing information about hobbies and personal experiences. \nLet me break down the key areas: Your strongest area is fluency with a rating of 2 out of 5. The student provided very short responses and showed hesitation, particularly when asked to elaborate on personal experiences. An area to focus on is coherence, rated at 2 out of 5. Responses lacked logical flow and connection to the questions asked, indicating difficulty in maintaining a coherent discourse. \nI recommend starting with the A1 - Basic Communication Skills module. The top patterns to work on are: 1. Expand vocabulary related to personal interests and experiences. 2. Practice forming complete sentences to express thoughts. \nFor practice, I suggest this exercise: Engage in Picture Narration exercises to describe images related to hobbies and daily activities. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 13,
+  "survey": {
+    "completed": false,
+    "completed_at": null,
+    "responses": {
+      "comfort_level": null,
+      "feedback_usefulness": null,
+      "name": null,
+      "email": null
+    }
+  }
+}

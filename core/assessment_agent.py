@@ -1,13 +1,33 @@
 """
 Assessment Agent - Generates structured proficiency assessment from interview transcript
-Uses OpenAI Chat API with function calling and structured outputs
+Uses OpenAI Chat API with structured outputs (optimized for speed)
 """
 
 import os
 import json
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 from openai import OpenAI
+
+
+# Module-level cache for system prompt (loaded once per process)
+_SYSTEM_PROMPT_CACHE: Optional[str] = None
+
+
+def _load_system_prompt() -> str:
+    """Load system prompt from file and cache it in memory"""
+    global _SYSTEM_PROMPT_CACHE
+    if _SYSTEM_PROMPT_CACHE is None:
+        module_dir = os.path.dirname(os.path.abspath(__file__))
+        prompt_path = os.path.join(module_dir, "resources", "system_prompt.txt")
+        prompt_path = os.path.normpath(prompt_path)
+        
+        with open(prompt_path, 'r', encoding='utf-8') as f:
+            _SYSTEM_PROMPT_CACHE = f.read().strip()
+        
+        print(f"📋 System prompt loaded ({len(_SYSTEM_PROMPT_CACHE)} chars)")
+    
+    return _SYSTEM_PROMPT_CACHE
 
 
 class DomainAnalysis(BaseModel):
@@ -33,68 +53,18 @@ class AssessmentAgent:
     """
     Senior ESL Examiner agent that produces predictive, data-driven proficiency reports.
     Uses Semi-Structured Oral Interview (SSOI) methodology.
+    
+    Optimized for speed with pre-loaded system prompt (no tool calling).
     """
     
     def __init__(self):
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        # Pre-load system prompt on initialization
+        self.system_prompt = _load_system_prompt()
         
     def get_system_prompt(self) -> str:
-        """System prompt for the assessment agent"""
-        return """### IDENTITY
-You are a Senior ESL Examiner specialized in Semi-Structured Oral Interviews (SSOI). Your goal is to produce a predictable, data-driven proficiency report.
-
-### TASK SEQUENCE
-1. CALL `read_guidance()` to load the scoring rubric and WLP Logic.
-2. ANALYZE the transcript to locate the "Linguistic Ceiling." (Where did the student stop being comfortable?)
-3. GENERATE a structured report based on the evidence found.
-
-### STRICT EVALUATION RULES
-- **The "Evidence-First" Rule:** You are forbidden from making a claim without a direct transcript quote.
-    - *Bad:* "The student has poor grammar."
-    - *Good:* "The student shows a gap in tense consistency (Evidence: 'I go to store yesterday')."
-- **The Coding Analogy Rule:** To help the user understand technical linguistic gaps, use coding analogies (C++, Java, or Python).
-    - Example: "Using 'stuff' instead of 'infrastructure' is like using a 'Generic Object' type instead of a 'Specific Class'—it lacks the necessary attributes for the task."
-- **The Global vs. Local Check:** Prioritize identifying Global Errors that break communication.
-
-### REPORT GENERATION SCHEMA
-You must return a report with these specific sections:
-
-#### 1. PROFICIENCY SUMMARY
-- **CEFR/ACTFL Level:** [Level]
-- **Ceiling Analysis:** Identify which phase (Warm-up, Level-up, or Probe) caused the breakdown.
-
-#### 2. ANALYTIC BREAKDOWN (Table Format)
-- **Domain:** [Fluency | Grammar | Lexical | Phonology | Coherence]
-- **Rating:** [1-5]
-- **Observation:** [Detailed analysis]
-- **Evidence:** ["Direct quote from student"]
-
-#### 3. CURRICULUM ROADMAP
-- **Starting Point:** Which module should they enter?
-- **Logic Errors to Debug:** Top 2 grammatical or lexical patterns to fix.
-- **Optimization Strategy:** One specific exercise (e.g., Shadowing, Picture Narration).
-
-### CRITICAL REQUIREMENTS
-- ALWAYS call `read_guidance()` first to load the assessment protocol
-- ALWAYS provide direct quotes as evidence
-- NEVER make claims without supporting evidence from the transcript"""
-
-    def _get_tools(self) -> List[dict]:
-        """Define tools available to the assessment agent"""
-        return [
-            {
-                "type": "function",
-                "function": {
-                    "name": "read_guidance",
-                    "description": "Load the assessment protocol (scoring rubric and WLP Logic) from assess_prot.txt. MUST be called before analysis.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {},
-                        "required": []
-                    }
-                }
-            }
-        ]
+        """Get the cached system prompt"""
+        return self.system_prompt
     
     def _format_transcript(self, conversation_history: List[tuple]) -> str:
         """Format conversation history into a readable transcript"""
@@ -111,6 +81,9 @@ You must return a report with these specific sections:
         """
         Generate structured assessment report from interview transcript.
         
+        Optimized version with single API call - no tool calling needed.
+        System prompt already includes assessment protocol.
+        
         Args:
             conversation_history: List of (speaker, text) tuples from the interview
             
@@ -122,88 +95,14 @@ You must return a report with these specific sections:
         # Format the transcript
         transcript = self._format_transcript(conversation_history)
         
-        # Create the initial message
+        # Create messages with pre-loaded system prompt
         messages = [
             {"role": "system", "content": self.get_system_prompt()},
             {"role": "user", "content": f"Please analyze this interview transcript and provide a comprehensive proficiency assessment:\n\n{transcript}"}
         ]
         
-        # First API call - agent will call read_guidance() tool
-        print("🔧 Calling OpenAI API with function calling enabled...")
-        response = self.client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages,
-            tools=self._get_tools(),
-            tool_choice="auto",
-            temperature=0.1,  # Very low for fast, deterministic assessment
-            max_tokens=2000  # Limit output length for speed
-        )
-        
-        # Handle tool calls (read_guidance)
-        while response.choices[0].message.tool_calls:
-            print("🔧 Agent is calling tools...")
-            
-            # Add assistant's response to messages (convert to dict for proper serialization)
-            assistant_message = response.choices[0].message
-            messages.append({
-                "role": "assistant",
-                "content": assistant_message.content,
-                "tool_calls": [
-                    {
-                        "id": tc.id,
-                        "type": "function",
-                        "function": {
-                            "name": tc.function.name,
-                            "arguments": tc.function.arguments
-                        }
-                    }
-                    for tc in assistant_message.tool_calls
-                ]
-            })
-            
-            # Process each tool call
-            for tool_call in response.choices[0].message.tool_calls:
-                function_name = tool_call.function.name
-                print(f"🔧 Tool called: {function_name}")
-                
-                if function_name == "read_guidance":
-                    # Import and call the read_guidance function
-                    from tools.assessment_guidance import read_guidance
-                    guidance_text = read_guidance()
-                    
-                    # Add tool response to messages
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "name": function_name,
-                        "content": guidance_text
-                    })
-                    print(f"✅ Guidance text loaded ({len(guidance_text)} chars)")
-            
-            # Continue conversation with tool results
-            response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=messages,
-                tools=self._get_tools(),
-                tool_choice="auto",
-                temperature=0.1,  # Very low for fast, deterministic assessment
-                max_tokens=2000  # Limit output length for speed
-            )
-        
-        # Now request structured output for the final report
-        print("📝 Requesting structured assessment report...")
-        final_message = response.choices[0].message
-        if final_message.content:
-            messages.append({
-                "role": "assistant",
-                "content": final_message.content
-            })
-        messages.append({
-            "role": "user",
-            "content": "Now provide your complete assessment in the structured format."
-        })
-        
-        # Final API call with structured outputs
+        # Single API call with structured output - faster than tool calling!
+        print("🚀 Calling OpenAI API with structured output...")
         structured_response = self.client.beta.chat.completions.parse(
             model="gpt-4o-mini",
             messages=messages,

@@ -356,6 +356,8 @@ class KoreanVoiceTutor {
                     this.audioResponseComplete = false; // Reset flag for new response
                     this.setMicButtonState('inactive'); // Disable while AI speaks
                     console.log('🔊 AI started speaking');
+                    // Reset audio generation complete flag for new response
+                    this.audioManager.audioGenerationComplete = false;
                 }
                 this.audioManager.playAudioChunk(message.audio);
                 
@@ -368,6 +370,13 @@ class KoreanVoiceTutor {
                     console.warn('⚠️ Audio playback timeout - forcing mic re-enable');
                     this.onAudioPlaybackComplete();
                 }, 30000);
+                break;
+            
+            case 'ai_audio_done':
+                // OpenAI finished generating audio (all chunks sent)
+                console.log('✅ AI audio generation complete - all chunks sent');
+                this.audioManager.markAudioGenerationComplete();
+                // Audio chunks are still playing, wait for queue to empty
                 break;
             
             case 'response_complete':
