@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Environment
+.env
+.venv
+venv/
+ENV/
+
+# Assessment reports (contains PII)
+reports/*.json
+web/reports/*.json
+web/backend/reports/*.json
+
+# Test files
+test_*.py
+
+# Obsolete root-level files
+app.py
+app_switch.py
+interview_agent.py
+
+# SSL certificates (local dev)
+cert.pem
+key.pem
+
+# Dependencies
+uv.lock
