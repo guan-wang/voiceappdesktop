@@ -23,8 +23,8 @@ if sys.platform == 'win32':
         except:
             pass
 
-from session_store import session_store
-from realtime_bridge import RealtimeBridge
+from .session_store import session_store
+from .realtime_bridge import RealtimeBridge
 
 # Load environment variables
 load_dotenv()
