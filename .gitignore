@@ -24,9 +24,10 @@ app.py
 app_switch.py
 interview_agent.py
 
-# SSL certificates (local dev)
-cert.pem
-key.pem
+# SSL certificates (local dev - anywhere in repo)
+**/cert.pem
+**/key.pem
+*.pem
 
 # Dependencies
 uv.lock
