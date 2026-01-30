@@ -6,6 +6,7 @@ class KoreanVoiceTutor {
     constructor() {
         this.ws = null;
         this.audioManager = new AudioManager();
+        this.reportRenderer = new ReportRenderer();
         this.sessionId = null;
         this.isRecording = false;
         this.isConnected = false;
@@ -14,6 +15,11 @@ class KoreanVoiceTutor {
         this.isInitialized = false;
         this.assessmentComplete = false;
         this.hasInteractedWithMic = false; // Track if user has pressed mic
+        this.audioResponseComplete = false; // Track if OpenAI finished sending audio
+        this.audioTimeoutId = null; // Safety timeout for stuck audio
+        
+        // Make this instance globally accessible for audio callbacks
+        window.app = this;
         
         // PTT timing
         this.pressStartTime = null;
@@ -59,6 +65,9 @@ class KoreanVoiceTutor {
         
         // Setup survey
         this.setupSurvey();
+        
+        // Setup report CTA handler
+        this.setupReportCTA();
     }
     
     setupWelcomeScreen() {
@@ -172,6 +181,49 @@ class KoreanVoiceTutor {
         this.surveyCloseButton.addEventListener('click', () => {
             this.closeSurvey();
         });
+    }
+    
+    setupReportCTA() {
+        this.reportRenderer.setupCTAHandler(() => {
+            console.log('🎯 Report CTA clicked - stopping audio and showing survey');
+            // Stop AI audio if playing
+            if (this.isAISpeaking || this.audioManager.isPlaying) {
+                this.audioManager.clearQueue();
+                this.isAISpeaking = false;
+            }
+            // Hide report
+            this.reportRenderer.hideReport();
+            // Show survey after report fade-out
+            setTimeout(() => {
+                this.showSurvey();
+            }, 600);
+        });
+    }
+    
+    onAudioPlaybackComplete() {
+        /**
+         * Called by AudioManager when audio queue is empty and playback actually finishes.
+         * This is the TRUE signal that AI finished speaking.
+         */
+        console.log('🔊 Audio playback actually completed');
+        
+        // Clear safety timeout
+        if (this.audioTimeoutId) {
+            clearTimeout(this.audioTimeoutId);
+            this.audioTimeoutId = null;
+        }
+        
+        this.isAISpeaking = false;
+        
+        // If assessment is complete, show Next button (or report is already showing)
+        if (this.assessmentComplete) {
+            console.log('📋 Assessment audio finished');
+            // Report is already showing, do nothing
+        } else if (this.isConnected && !this.isAssessing && this.audioResponseComplete) {
+            // Re-enable mic button for normal conversation
+            console.log('🎤 Re-enabling mic button');
+            this.setMicButtonState('ready');
+        }
     }
     
     showSurvey() {
@@ -301,25 +353,31 @@ class KoreanVoiceTutor {
                 // Play AI audio
                 if (!this.isAISpeaking) {
                     this.isAISpeaking = true;
+                    this.audioResponseComplete = false; // Reset flag for new response
                     this.setMicButtonState('inactive'); // Disable while AI speaks
                     console.log('🔊 AI started speaking');
                 }
                 this.audioManager.playAudioChunk(message.audio);
+                
+                // Clear existing timeout and set new safety timeout
+                if (this.audioTimeoutId) {
+                    clearTimeout(this.audioTimeoutId);
+                }
+                // If audio doesn't finish within 30s, force re-enable mic
+                this.audioTimeoutId = setTimeout(() => {
+                    console.warn('⚠️ Audio playback timeout - forcing mic re-enable');
+                    this.onAudioPlaybackComplete();
+                }, 30000);
                 break;
             
             case 'response_complete':
-                // AI finished responding
-                console.log('✅ AI response complete');
-                this.isAISpeaking = false;
+                // AI finished responding (OpenAI sent all data)
+                console.log('✅ AI response complete (data sent)');
+                this.audioResponseComplete = true;
                 
-                // If assessment is complete, show Next button instead of re-enabling mic
-                if (this.assessmentComplete) {
-                    console.log('📋 Assessment report finished - showing Next button');
-                    this.showNextButton();
-                } else if (this.isConnected && !this.isAssessing) {
-                    // Re-enable button after AI finishes (normal conversation)
-                    this.setMicButtonState('ready');
-                }
+                // Don't immediately re-enable mic - wait for audio to actually finish playing
+                // Audio manager will call onAudioPlaybackComplete() when done
+                console.log('⏳ Waiting for audio playback to complete...');
                 break;
             
             case 'assessment_triggered':
@@ -334,9 +392,18 @@ class KoreanVoiceTutor {
                 console.log('📊 Assessment complete:', message.report);
                 this.isAssessing = false;
                 this.assessmentComplete = true;
-                // Hide loading overlay - return to conversation
+                // Hide loading overlay
                 this.hideLoadingOverlay();
-                // AI will now speak the report, so keep mic disabled
+                // Show the visual report (full screen)
+                this.reportRenderer.showReport({
+                    session_id: this.sessionId,
+                    timestamp: new Date().toISOString(),
+                    report: message.report,
+                    verbal_summary: message.summary,
+                    conversation_length: 0
+                });
+                // AI will speak the report in the background
+                // Audio will be stopped when user clicks CTA button
                 this.setMicButtonState('inactive');
                 this.micButton.disabled = true;
                 break;

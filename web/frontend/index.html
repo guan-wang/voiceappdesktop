@@ -6,6 +6,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <title>Korean Voice Tutor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -98,6 +101,88 @@
 
         <!-- Audio Player (hidden, for AI responses) -->
         <audio id="audioPlayer" style="display: none;"></audio>
+    </div>
+    
+    <!-- Assessment Report View (Full Screen) -->
+    <div class="report-overlay" id="reportOverlay" style="display: none;">
+        <div class="report-container">
+            <!-- Header -->
+            <header class="report-header" id="reportHeader">
+                <div>
+                    <h1 class="report-title">Proficiency Report</h1>
+                    <p class="report-subtitle" id="reportSubtitle">Korean Assessment</p>
+                </div>
+                <div class="report-ref" id="reportRef"></div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="report-main">
+                <!-- Left Column -->
+                <div class="report-left">
+                    <!-- Badge Section -->
+                    <div class="report-badge-section" id="reportBadgeSection">
+                        <div class="badge-glow"></div>
+                        <div class="badge-circle">
+                            <span class="badge-level" id="badgeLevel"></span>
+                        </div>
+                        <h3 class="badge-description" id="badgeDescription"></h3>
+                        
+                        <!-- CEFR Progress Bar -->
+                        <div class="cefr-progress">
+                            <div class="cefr-labels" id="cefrLabels"></div>
+                            <div class="cefr-bar">
+                                <div class="cefr-fill" id="cefrFill"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ceiling Analysis -->
+                    <div class="ceiling-section" id="ceilingSection">
+                        <div class="ceiling-badge" id="ceilingBadge"></div>
+                        <p class="ceiling-text" id="ceilingText"></p>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="report-right">
+                    <!-- Skill Analysis -->
+                    <div class="skill-section">
+                        <div class="section-header">
+                            <div class="section-indicator"></div>
+                            <h3 class="section-title">Skill Analysis</h3>
+                        </div>
+                        
+                        <!-- Radar Chart -->
+                        <div class="radar-chart-container">
+                            <svg class="radar-chart" id="radarChart" viewBox="0 0 300 300"></svg>
+                        </div>
+                        
+                        <!-- Domain Cards -->
+                        <div class="domain-cards" id="domainCards"></div>
+                    </div>
+                </div>
+            </main>
+            
+            <!-- Strategy Section -->
+            <div class="strategy-section" id="strategySection">
+                <span class="strategy-badge">Optimization Focus</span>
+                <h2 class="strategy-title">Recommended Strategy</h2>
+                <p class="strategy-text" id="strategyText"></p>
+                
+                <div class="strategy-footer">
+                    <div class="strategy-module">
+                        <p class="strategy-module-label">Target Curriculum</p>
+                        <p class="strategy-module-text" id="strategyModuleText"></p>
+                    </div>
+                    <button class="strategy-cta" id="strategyCTA">Begin Path</button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="report-footer">
+                <p>Seoul Night • Language Assessment Engine</p>
+            </footer>
+        </div>
     </div>
     
     <!-- Survey Screen -->
@@ -200,6 +285,7 @@
 
     <!-- Scripts -->
     <script src="/static/audio.js"></script>
+    <script src="/static/report.js"></script>
     <script src="/static/app.js"></script>
 </body>
 </html>

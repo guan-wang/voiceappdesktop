@@ -1,0 +1,59 @@
+{
+  "session_id": "213bcbfa-35a9-4ebc-ac1f-b17986d86df1",
+  "timestamp": "2026-01-30T11:40:23.321248",
+  "report": {
+    "proficiency_level": "A2",
+    "ceiling_phase": "Level-Up",
+    "ceiling_analysis": "The breakdown occurred during the Level-Up phase, particularly when the student was asked to express opinions and provide justifications.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 4,
+        "observation": "The student demonstrates good fluency with minimal hesitation during the Warm-Up phase. However, there are noticeable pauses and hesitations during the Level-Up phase.",
+        "evidence": "\"내일 부모님하고 우리 서산 가요.\" (Good fluency)"
+      },
+      {
+        "domain": "Grammar",
+        "rating": 3,
+        "observation": "The student uses simple present and past tenses correctly but struggles with complex sentence structures and conditionals.",
+        "evidence": "\"프라이빗젯 사고 싶어요.\" (Simple structure)"
+      },
+      {
+        "domain": "Lexical",
+        "rating": 3,
+        "observation": "The vocabulary is appropriate for the context but lacks specificity and complexity in the Level-Up phase.",
+        "evidence": "\"맛있는 음식, 생선구이 먹어요.\" (Generic terms)"
+      },
+      {
+        "domain": "Phonology",
+        "rating": 4,
+        "observation": "Pronunciation is generally clear, with minor errors that do not impede communication.",
+        "evidence": "\"하버드나에서\" (Minor pronunciation issue)"
+      },
+      {
+        "domain": "Coherence",
+        "rating": 3,
+        "observation": "The student connects ideas but lacks the use of logical operators in more complex responses.",
+        "evidence": "\"따뜻한 나라 좋아요. 네. 해변 조금, sunbathing.\" (Lacks cohesion)"
+      }
+    ],
+    "starting_module": "A2 Level Grammar and Vocabulary Expansion",
+    "logic_errors_to_debug": [
+      "Complex Sentence Structures: Encourage the use of relative clauses and conditionals to express opinions and justifications.",
+      "Specific Vocabulary Usage: Work on replacing generic terms with more precise vocabulary to enhance clarity and richness in responses."
+    ],
+    "optimization_strategy": "Implement Shadowing Exercises where the student listens to and repeats complex sentences from native speakers to improve fluency and grammatical accuracy."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A2 level. You performed well during the Level-Up phase. The breakdown occurred during the Level-Up phase, particularly when the student was asked to express opinions and provide justifications. \nLet me break down the key areas: Your strongest area is fluency with a rating of 4 out of 5. The student demonstrates good fluency with minimal hesitation during the Warm-Up phase. However, there are noticeable pauses and hesitations during the Level-Up phase. An area to focus on is coherence, rated at 3 out of 5. The student connects ideas but lacks the use of logical operators in more complex responses. \nI recommend starting with the A2 Level Grammar and Vocabulary Expansion module. The top patterns to work on are: 1. Complex Sentence Structures: Encourage the use of relative clauses and conditionals to express opinions and justifications. 2. Specific Vocabulary Usage: Work on replacing generic terms with more precise vocabulary to enhance clarity and richness in responses. \nFor practice, I suggest this exercise: Implement Shadowing Exercises where the student listens to and repeats complex sentences from native speakers to improve fluency and grammatical accuracy. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 18,
+  "survey": {
+    "completed": false,
+    "completed_at": null,
+    "responses": {
+      "comfort_level": null,
+      "feedback_usefulness": null,
+      "name": null,
+      "email": null
+    }
+  }
+}

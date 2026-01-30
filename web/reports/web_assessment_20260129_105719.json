@@ -1,0 +1,59 @@
+{
+  "session_id": "f9505be0-6031-40b3-bc8c-161ff2e48468",
+  "timestamp": "2026-01-29T10:57:19.549256",
+  "report": {
+    "proficiency_level": "A2",
+    "ceiling_phase": "Level-Up",
+    "ceiling_analysis": "The breakdown occurred during the Level-Up phase, where the student struggled to elaborate on their experiences.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 3,
+        "observation": "The student demonstrates basic fluency but hesitates when asked to elaborate, indicating a struggle with longer responses.",
+        "evidence": "이거 몰라요 (I don't know this)"
+      },
+      {
+        "domain": "Grammar",
+        "rating": 3,
+        "observation": "The student uses simple sentence structures but lacks complexity and makes minor grammatical errors.",
+        "evidence": "자전거 제일 좋아요 (I like bicycle the most)"
+      },
+      {
+        "domain": "Lexical",
+        "rating": 3,
+        "observation": "Vocabulary is basic and lacks specificity; the student uses general terms instead of more precise language.",
+        "evidence": "아름다워 뷰 있어요 (There is beautiful view)"
+      },
+      {
+        "domain": "Phonology",
+        "rating": 4,
+        "observation": "Pronunciation is generally clear, with some minor issues that do not impede understanding.",
+        "evidence": "N/A"
+      },
+      {
+        "domain": "Coherence",
+        "rating": 2,
+        "observation": "The student struggles to connect ideas logically when asked to provide more detail.",
+        "evidence": "이거 몰라요 (I don't know this)"
+      }
+    ],
+    "starting_module": "Module focusing on expanding vocabulary and sentence complexity (e.g., descriptive language).",
+    "logic_errors_to_debug": [
+      "Complex Sentence Structures: Encourage the use of relative clauses and conjunctions to enhance narrative quality.",
+      "Specific Vocabulary Usage: Work on replacing generic terms with more precise vocabulary to improve clarity and engagement."
+    ],
+    "optimization_strategy": "Implement 'Picture Narration' exercises where the student describes a series of images to practice elaboration and coherence in their responses."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A2 level. You performed well during the Level-Up phase. The breakdown occurred during the Level-Up phase, where the student struggled to elaborate on their experiences. \nLet me break down the key areas: Your strongest area is phonology with a rating of 4 out of 5. Pronunciation is generally clear, with some minor issues that do not impede understanding. An area to focus on is coherence, rated at 2 out of 5. The student struggles to connect ideas logically when asked to provide more detail. \nI recommend starting with the Module focusing on expanding vocabulary and sentence complexity (e.g., descriptive language). module. The top patterns to work on are: 1. Complex Sentence Structures: Encourage the use of relative clauses and conjunctions to enhance narrative quality. 2. Specific Vocabulary Usage: Work on replacing generic terms with more precise vocabulary to improve clarity and engagement. \nFor practice, I suggest this exercise: Implement 'Picture Narration' exercises where the student describes a series of images to practice elaboration and coherence in their responses. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 15,
+  "survey": {
+    "completed": true,
+    "completed_at": "2026-01-29T10:58:33.432592",
+    "responses": {
+      "comfort_level": "natural",
+      "feedback_usefulness": "very_insightful",
+      "name": "Wang Guan",
+      "email": "test@guansemail.com"
+    }
+  }
+}

@@ -883,3 +883,564 @@ body {
         padding: 16px;
     }
 }
+
+/* ==========================================
+   ASSESSMENT REPORT STYLES
+   ========================================== */
+
+.report-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0B0E14;
+    z-index: 2000;
+    overflow-y: auto;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.report-overlay.active {
+    opacity: 1;
+}
+
+.report-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+    min-height: 100vh;
+}
+
+/* Header */
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.report-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.report-subtitle {
+    color: #A78BFA;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.report-ref {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #64748B;
+}
+
+/* Main Layout */
+.report-main {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
+/* Left Column - Badge & Ceiling */
+.report-left {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Badge Section */
+.report-badge-section {
+    background: #161B22;
+    border-radius: 24px;
+    padding: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.report-badge-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3B82F6 0%, #8B5CF6 100%);
+}
+
+.badge-glow {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+    filter: blur(40px);
+    pointer-events: none;
+}
+
+.badge-circle {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: #0B0E14;
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+.badge-level {
+    font-size: 56px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #ffffff 0%, #A78BFA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.badge-description {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+/* CEFR Progress */
+.cefr-progress {
+    width: 100%;
+}
+
+.cefr-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 0 4px;
+}
+
+.cefr-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748B;
+    transition: all 0.3s ease;
+}
+
+.cefr-label.active {
+    color: #A78BFA;
+    transform: scale(1.1);
+}
+
+.cefr-bar {
+    position: relative;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.cefr-fill {
+    position: absolute;
+    height: 100%;
+    background: #8B5CF6;
+    border-radius: 2px;
+    transition: width 1s ease-out;
+}
+
+/* Ceiling Section */
+.ceiling-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ceiling-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    color: #60A5FA;
+    background: rgba(96, 165, 250, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    margin-bottom: 12px;
+}
+
+.ceiling-text {
+    color: #94A3B8;
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.6;
+}
+
+/* Right Column - Skills */
+.report-right {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Skill Section */
+.skill-section {
+    background: #161B22;
+    border-radius: 24px;
+    padding: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 0 8px;
+}
+
+.section-indicator {
+    width: 6px;
+    height: 24px;
+    background: #8B5CF6;
+    border-radius: 3px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* Radar Chart */
+.radar-chart-container {
+    width: 100%;
+    height: 280px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.radar-chart {
+    width: 100%;
+    height: 100%;
+    max-width: 300px;
+    max-height: 300px;
+}
+
+/* Domain Cards */
+.domain-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.domain-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.domain-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.domain-card.expanded {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.4);
+    padding: 20px;
+}
+
+.domain-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.domain-card-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.domain-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #CBD5E1;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+}
+
+.domain-card.expanded .domain-name {
+    color: #A78BFA;
+}
+
+.domain-rating {
+    display: flex;
+    gap: 2px;
+}
+
+.rating-bar {
+    width: 12px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 1px;
+    transition: background 0.3s ease;
+}
+
+.rating-bar.filled {
+    background: rgba(139, 92, 246, 0.6);
+}
+
+.domain-card.expanded .rating-bar.filled {
+    background: #A78BFA;
+}
+
+.domain-chevron {
+    width: 20px;
+    height: 20px;
+    color: #64748B;
+    transition: all 0.3s ease;
+}
+
+.domain-card.expanded .domain-chevron {
+    transform: rotate(180deg);
+    color: #A78BFA;
+}
+
+.domain-card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.domain-card.expanded .domain-card-body {
+    max-height: 300px;
+    margin-top: 16px;
+}
+
+.domain-observation {
+    color: #CBD5E1;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.domain-evidence {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px;
+    border-radius: 12px;
+    border-left: 2px solid rgba(139, 92, 246, 0.5);
+}
+
+.evidence-label {
+    font-size: 10px;
+    color: #64748B;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+
+.evidence-text {
+    color: #CBD5E1;
+    font-size: 14px;
+    line-height: 1.6;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* Strategy Section */
+.strategy-section {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(15, 23, 42, 1) 100%);
+    border-radius: 24px;
+    padding: 40px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+}
+
+.strategy-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 900;
+    color: #C4B5FD;
+    background: rgba(139, 92, 246, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 16px;
+}
+
+.strategy-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 16px;
+}
+
+.strategy-text {
+    font-size: 16px;
+    color: #CBD5E1;
+    line-height: 1.7;
+    margin-bottom: 32px;
+}
+
+.strategy-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 24px;
+}
+
+.strategy-module {
+    flex: 1;
+}
+
+.strategy-module-label {
+    font-size: 10px;
+    color: #A78BFA;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+}
+
+.strategy-module-text {
+    color: #CBD5E1;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.strategy-cta {
+    padding: 12px 24px;
+    background: #8B5CF6;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.2);
+    white-space: nowrap;
+}
+
+.strategy-cta:hover {
+    background: #7C3AED;
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(139, 92, 246, 0.3);
+}
+
+.strategy-cta:active {
+    transform: scale(0.95);
+}
+
+/* Footer */
+.report-footer {
+    text-align: center;
+    padding: 32px 0;
+    color: #64748B;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .report-container {
+        padding: 16px 12px 32px;
+    }
+
+    .report-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 24px;
+    }
+
+    .report-title {
+        font-size: 24px;
+    }
+
+    .report-subtitle {
+        font-size: 12px;
+    }
+
+    .report-main {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .report-badge-section {
+        padding: 32px 24px;
+    }
+
+    .badge-circle {
+        width: 120px;
+        height: 120px;
+    }
+
+    .badge-level {
+        font-size: 48px;
+    }
+
+    .badge-description {
+        font-size: 16px;
+    }
+
+    .skill-section {
+        padding: 24px 16px;
+    }
+
+    .radar-chart-container {
+        height: 240px;
+    }
+
+    .strategy-section {
+        padding: 24px;
+    }
+
+    .strategy-title {
+        font-size: 22px;
+    }
+
+    .strategy-text {
+        font-size: 14px;
+    }
+
+    .strategy-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .strategy-cta {
+        width: 100%;
+    }
+}

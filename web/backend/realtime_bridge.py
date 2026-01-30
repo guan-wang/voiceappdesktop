@@ -224,14 +224,21 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                 # Other events - just log type for context
                 print(f"📨 [{self.session.session_id[:8]}] Event: {event_type}")
         
-        # Forward relevant events to client
+        # Handle events (separate from logging)
         if event_type == "response.audio.delta":
             # Forward AI audio to client
+            chunk_size = len(event.get("delta", ""))
+            print(f"🔊 [{self.session.session_id[:8]}] Audio chunk: {chunk_size} bytes")
             await self.send_to_client({
                 "type": "ai_audio",
                 "audio": event.get("delta", ""),
                 "response_id": event.get("response_id")
             })
+        
+        elif event_type == "response.audio.done":
+            # Audio generation complete
+            print(f"✅ [{self.session.session_id[:8]}] Audio generation done")
+            pass  # Just log, no action needed
         
         elif event_type == "response.audio_transcript.delta":
             # Accumulate transcript
@@ -256,9 +263,25 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                 
                 self.session.transcript_buffer = ""
         
+        elif event_type == "conversation.item.input_audio_transcription.delta":
+            # User speech transcription delta (incremental)
+            # We should accumulate these like we do for AI transcript
+            delta = event.get("delta", "")
+            if delta:
+                # Accumulate in a user transcript buffer
+                if not hasattr(self.session, 'user_transcript_buffer'):
+                    self.session.user_transcript_buffer = ""
+                self.session.user_transcript_buffer += delta
+        
         elif event_type == "conversation.item.input_audio_transcription.completed":
-            # User speech transcribed
-            transcript = event.get("transcript", "")
+            # User speech transcription completed
+            # Use the accumulated buffer if available, otherwise use the completed transcript
+            if hasattr(self.session, 'user_transcript_buffer') and self.session.user_transcript_buffer:
+                transcript = self.session.user_transcript_buffer
+                self.session.user_transcript_buffer = ""  # Reset buffer
+            else:
+                transcript = event.get("transcript", "")
+            
             print(f"👤 [{self.session.session_id[:8]}] User: {transcript[:50]}...")
             
             await self.send_to_client({
@@ -458,20 +481,27 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             except Exception as e:
                 print(f"⚠️ [{self.session.session_id[:8]}] Could not clear audio buffer: {e}")
             
-            # Send summary to be spoken (will handle voice switching internally)
-            print(f"🗣️ [{self.session.session_id[:8]}] Sending summary to be spoken...")
-            await self.send_text_message(verbal_summary, language="english")
-            
-            # Send report to client
+            # CRITICAL: Send report to client FIRST (before trying to speak)
+            # This ensures the visual report shows even if speech fails
             await self.send_to_client({
                 "type": "assessment_complete",
                 "report": report.model_dump(),
                 "summary": verbal_summary
             })
-            print(f"✅ [{self.session.session_id[:8]}] Assessment delivered")
+            print(f"✅ [{self.session.session_id[:8]}] Assessment report sent to client")
             
             # Save report to file
             self.session.save_assessment_report(report, verbal_summary)
+            
+            # Now try to speak the summary in the background (non-blocking)
+            # If this fails, the visual report is already showing
+            try:
+                print(f"🗣️ [{self.session.session_id[:8]}] Sending summary to be spoken...")
+                await self.send_text_message(verbal_summary, language="english")
+                print(f"✅ [{self.session.session_id[:8]}] Summary sent for speech")
+            except Exception as e:
+                print(f"⚠️ [{self.session.session_id[:8]}] Could not send summary for speech: {e}")
+                print(f"ℹ️ [{self.session.session_id[:8]}] Visual report is still displayed to user")
             
         except asyncio.CancelledError:
             print(f"🛑 [{self.session.session_id[:8]}] Assessment generation cancelled")

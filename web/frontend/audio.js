@@ -226,6 +226,7 @@ class AudioManager {
     async playAudioChunk(base64Audio) {
         // Queue audio for playback
         this.audioQueue.push(base64Audio);
+        console.log(`📥 Audio chunk queued (queue size: ${this.audioQueue.length})`);
         
         if (!this.isPlaying) {
             this.processAudioQueue();
@@ -235,11 +236,17 @@ class AudioManager {
     async processAudioQueue() {
         if (this.audioQueue.length === 0) {
             this.isPlaying = false;
+            console.log('✅ Audio queue empty - playback complete');
+            // Notify app that audio actually finished playing
+            if (window.app && window.app.onAudioPlaybackComplete) {
+                window.app.onAudioPlaybackComplete();
+            }
             return;
         }
         
         this.isPlaying = true;
         const base64Audio = this.audioQueue.shift();
+        console.log(`▶️ Playing audio chunk (${this.audioQueue.length} remaining in queue)`);
         
         try {
             // Decode base64 to array buffer
@@ -297,7 +304,12 @@ class AudioManager {
             this.scheduledSources.push(source);
             
         } catch (error) {
-            console.error('❌ Error playing audio:', error);
+            console.error('❌ Error playing audio chunk:', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack,
+                audioDataLength: base64Audio.length
+            });
             this.processAudioQueue();
         }
     }

@@ -1,0 +1,59 @@
+{
+  "session_id": "9aead39e-e3bf-43ee-8ad2-5fe97029cfff",
+  "timestamp": "2026-01-29T14:59:40.433116",
+  "report": {
+    "proficiency_level": "B1 (Intermediate)",
+    "ceiling_phase": "Probe",
+    "ceiling_analysis": "The breakdown occurred during the Probe phase, specifically when discussing the impact of social media on communication.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 4,
+        "observation": "The student demonstrates good fluency with minimal hesitation. Responses are generally coherent.",
+        "evidence": "\"저는 사람에 따라서 다 다르다고 생각을 하고요...\""
+      },
+      {
+        "domain": "Grammar",
+        "rating": 3,
+        "observation": "Some grammatical inaccuracies are present, particularly in complex sentence structures.",
+        "evidence": "\"굳이 하나를 뽑자면 대면 근무하는 것이 사무실에서 좋다고 생각합니다.\""
+      },
+      {
+        "domain": "Lexical",
+        "rating": 3,
+        "observation": "The student uses appropriate vocabulary but occasionally resorts to generic terms.",
+        "evidence": "\"그렇게 쓰고 싶은데가 없어서 아내가 원하는 것들 사주거나...\""
+      },
+      {
+        "domain": "Phonology",
+        "rating": 4,
+        "observation": "Pronunciation is clear, with minor issues that do not impede understanding.",
+        "evidence": "\"부산 스타일의 국밥이었고 가격도 싸고 굉장히 맛있어서...\""
+      },
+      {
+        "domain": "Coherence",
+        "rating": 3,
+        "observation": "Ideas are generally linked, but transitions could be smoother, especially in more complex ideas.",
+        "evidence": "\"특히 팀 단위로 일할 때는 대면하면서 부딪히면서 일하는 것이...\""
+      }
+    ],
+    "starting_module": "Module focusing on complex sentence structures and abstract vocabulary.",
+    "logic_errors_to_debug": [
+      "Complex Sentence Structures: The student struggles with nested logic, as seen in their attempt to convey opinions in the Probe phase.",
+      "Specific Vocabulary Usage: The use of generic terms like '것들' instead of more specific vocabulary limits clarity."
+    ],
+    "optimization_strategy": "Implement a 'Shadowing' exercise where the student listens to and repeats complex sentences from native speakers, focusing on structure and vocabulary precision."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at B1 (Intermediate) level. You performed well during the Probe phase. The breakdown occurred during the Probe phase, specifically when discussing the impact of social media on communication. \nLet me break down the key areas: Your strongest area is fluency with a rating of 4 out of 5. The student demonstrates good fluency with minimal hesitation. Responses are generally coherent. An area to focus on is coherence, rated at 3 out of 5. Ideas are generally linked, but transitions could be smoother, especially in more complex ideas. \nI recommend starting with the Module focusing on complex sentence structures and abstract vocabulary. module. The top patterns to work on are: 1. Complex Sentence Structures: The student struggles with nested logic, as seen in their attempt to convey opinions in the Probe phase. 2. Specific Vocabulary Usage: The use of generic terms like '것들' instead of more specific vocabulary limits clarity. \nFor practice, I suggest this exercise: Implement a 'Shadowing' exercise where the student listens to and repeats complex sentences from native speakers, focusing on structure and vocabulary precision. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 18,
+  "survey": {
+    "completed": false,
+    "completed_at": null,
+    "responses": {
+      "comfort_level": null,
+      "feedback_usefulness": null,
+      "name": null,
+      "email": null
+    }
+  }
+}

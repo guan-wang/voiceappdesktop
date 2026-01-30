@@ -1,0 +1,59 @@
+{
+  "session_id": "2c56dda3-5068-4160-8b19-d407ccdfd179",
+  "timestamp": "2026-01-30T10:30:28.608623",
+  "report": {
+    "proficiency_level": "A2",
+    "ceiling_phase": "Level-up",
+    "ceiling_analysis": "The breakdown occurred during the Level-up phase, where the student struggled to provide detailed responses and engage in more complex dialogue.",
+    "domain_analyses": [
+      {
+        "domain": "Fluency",
+        "rating": 3,
+        "observation": "The student demonstrates basic fluency but hesitates when asked to elaborate. Responses are often short and lack depth.",
+        "evidence": "\"아 없어요.\""
+      },
+      {
+        "domain": "Grammar",
+        "rating": 2,
+        "observation": "The student exhibits global errors that hinder communication, particularly in sentence structure and verb forms.",
+        "evidence": "\"고양이 할빈이에요\" (should be \"하얼빈이예요\")."
+      },
+      {
+        "domain": "Lexical",
+        "rating": 3,
+        "observation": "The vocabulary is basic and lacks specificity. The use of terms is often generic, which limits clarity.",
+        "evidence": "\"제 취미는 요리, 자전거, 골프예요.\" (generic terms)."
+      },
+      {
+        "domain": "Phonology",
+        "rating": 4,
+        "observation": "Pronunciation is generally clear, but some words are mispronounced, affecting understanding.",
+        "evidence": "\"마포도 부츠\" (intended \"마파두부\")."
+      },
+      {
+        "domain": "Coherence",
+        "rating": 2,
+        "observation": "The student struggles to connect ideas logically, leading to abrupt or incomplete thoughts.",
+        "evidence": "\"암흑몰라야.\" (unclear response)."
+      }
+    ],
+    "starting_module": "Module focusing on expanding vocabulary and constructing complex sentences (e.g., relative clauses).",
+    "logic_errors_to_debug": [
+      "Sentence Structure: The student needs to practice correct noun usage and verb conjugation to avoid confusion (e.g., \"고양이 할빈\" should be corrected to \"하얼빈\").",
+      "Specific Vocabulary: Encourage the use of more specific terms instead of generic ones (e.g., replacing \"요리\" with \"중식 요리\" or \"한식 요리\" when appropriate)."
+    ],
+    "optimization_strategy": "Implement a \"Picture Narration\" exercise where the student describes a series of images related to their hobbies or interests, encouraging more complex sentence structures and vocabulary use."
+  },
+  "verbal_summary": "Based on our conversation, I've assessed your Korean proficiency at A2 level. You performed well during the Level-up phase. The breakdown occurred during the Level-up phase, where the student struggled to provide detailed responses and engage in more complex dialogue. \nLet me break down the key areas: Your strongest area is phonology with a rating of 4 out of 5. Pronunciation is generally clear, but some words are mispronounced, affecting understanding. An area to focus on is coherence, rated at 2 out of 5. The student struggles to connect ideas logically, leading to abrupt or incomplete thoughts. \nI recommend starting with the Module focusing on expanding vocabulary and constructing complex sentences (e.g., relative clauses). module. The top patterns to work on are: 1. Sentence Structure: The student needs to practice correct noun usage and verb conjugation to avoid confusion (e.g., \"고양이 할빈\" should be corrected to \"하얼빈\"). 2. Specific Vocabulary: Encourage the use of more specific terms instead of generic ones (e.g., replacing \"요리\" with \"중식 요리\" or \"한식 요리\" when appropriate). \nFor practice, I suggest this exercise: Implement a \"Picture Narration\" exercise where the student describes a series of images related to their hobbies or interests, encouraging more complex sentence structures and vocabulary use. \nYou're making good progress! Keep practicing regularly.",
+  "conversation_length": 19,
+  "survey": {
+    "completed": true,
+    "completed_at": "2026-01-30T10:36:25.606093",
+    "responses": {
+      "comfort_level": "awkward",
+      "feedback_usefulness": "very_insightful",
+      "name": "Gnasx",
+      "email": "guan.wang.se@gmail.com"
+    }
+  }
+}
