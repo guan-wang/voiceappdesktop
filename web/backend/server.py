@@ -132,6 +132,80 @@ async def health_check():
     }
 
 
+@app.get("/api/reports")
+async def list_reports():
+    """List all assessment reports"""
+    try:
+        reports_dir = os.path.join(os.path.dirname(__file__), "reports")
+        
+        # Create directory if it doesn't exist
+        if not os.path.exists(reports_dir):
+            return {"reports": [], "count": 0}
+        
+        # Get all JSON files
+        files = [f for f in os.listdir(reports_dir) if f.endswith('.json') and not f.startswith('.')]
+        
+        # Sort by date (newest first) - filename format: web_assessment_YYYYMMDD_HHMMSS.json
+        files.sort(reverse=True)
+        
+        # Get file details
+        file_details = []
+        for filename in files:
+            file_path = os.path.join(reports_dir, filename)
+            file_size = os.path.getsize(file_path)
+            file_details.append({
+                "filename": filename,
+                "size": file_size,
+                "download_url": f"/api/reports/{filename}"
+            })
+        
+        return {
+            "reports": file_details,
+            "count": len(files)
+        }
+        
+    except Exception as e:
+        print(f"❌ Error listing reports: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.get("/api/reports/{filename}")
+async def download_report(filename: str):
+    """Download a specific report"""
+    try:
+        # Security: prevent directory traversal
+        if '..' in filename or '/' in filename or '\\' in filename:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Invalid filename"}
+            )
+        
+        reports_dir = os.path.join(os.path.dirname(__file__), "reports")
+        file_path = os.path.join(reports_dir, filename)
+        
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(
+                file_path,
+                filename=filename,
+                media_type="application/json"
+            )
+        else:
+            return JSONResponse(
+                status_code=404,
+                content={"error": "File not found"}
+            )
+            
+    except Exception as e:
+        print(f"❌ Error downloading report: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """
