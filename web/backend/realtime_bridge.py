@@ -30,8 +30,9 @@ def _load_interview_system_prompt() -> str:
     global _INTERVIEW_SYSTEM_PROMPT_CACHE
     if _INTERVIEW_SYSTEM_PROMPT_CACHE is None:
         import os
-        core_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        prompt_path = os.path.join(core_dir, "core", "resources", "interview_system_prompt.txt")
+        # Get /app directory (go up 2 levels: backend -> app)
+        app_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        prompt_path = os.path.join(app_dir, "core", "resources", "interview_system_prompt.txt")
         prompt_path = os.path.normpath(prompt_path)
         
         with open(prompt_path, 'r', encoding='utf-8') as f:
