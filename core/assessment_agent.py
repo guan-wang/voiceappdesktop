@@ -135,7 +135,7 @@ You must return a report with these specific sections:
             messages=messages,
             tools=self._get_tools(),
             tool_choice="auto",
-            temperature=0.3,  # Lower for faster, more consistent responses
+            temperature=0.1,  # Very low for fast, deterministic assessment
             max_tokens=2000  # Limit output length for speed
         )
         
@@ -186,7 +186,7 @@ You must return a report with these specific sections:
                 messages=messages,
                 tools=self._get_tools(),
                 tool_choice="auto",
-                temperature=0.3,  # Lower for faster, more consistent responses
+                temperature=0.1,  # Very low for fast, deterministic assessment
                 max_tokens=2000  # Limit output length for speed
             )
         
@@ -208,7 +208,7 @@ You must return a report with these specific sections:
             model="gpt-4o-mini",
             messages=messages,
             response_format=AssessmentReport,
-            temperature=0.3,  # Lower for faster, more consistent responses
+            temperature=0.1,  # Very low for fast, deterministic assessment
             max_tokens=1500  # Structured output, limit for speed
         )
         

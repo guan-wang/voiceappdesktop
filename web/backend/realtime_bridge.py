@@ -417,9 +417,6 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
             self.background_tasks.add(keepalive_task)
             keepalive_task.add_done_callback(self.background_tasks.discard)
             
-            # Short delay to let WebSocket stabilize
-            await asyncio.sleep(1.0)
-            
             # Send progress update
             await self.send_to_client({
                 "type": "assessment_progress",
@@ -658,7 +655,7 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                     }
                 }))
                 print(f"✅ [{self.session.session_id[:8]}] Voice switched to: {voice}")
-                await asyncio.sleep(0.5)  # FIX #2: Longer wait for voice change to apply (was 0.3)
+                await asyncio.sleep(0.3)  # Wait for voice change to apply
                 
             except Exception as e:
                 # Voice switch failed, but continue anyway with stronger instructions
