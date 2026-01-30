@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python dependencies
+COPY web/backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY core/ ./core/
+COPY web/backend/ ./backend/
+COPY web/frontend/ ./frontend/
+
+# Create reports directory
+RUN mkdir -p backend/reports
+
+# Expose port (Railway will set PORT env var)
+EXPOSE 8080
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+
+# Run the server
+CMD ["python", "backend/server.py"]

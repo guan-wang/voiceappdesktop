@@ -225,7 +225,7 @@ def main():
         return
     
     # Run server
-    port = int(os.getenv("PORT", 7860))  # Default to 7860 for HuggingFace Spaces
+    port = int(os.getenv("PORT", 8080))  # Default to 8080 for Railway
     
     # Check if SSL certificates exist
     cert_file = os.path.join(os.path.dirname(__file__), "cert.pem")
