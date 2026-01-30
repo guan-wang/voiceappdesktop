@@ -18,7 +18,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from core import AssessmentStateMachine, AssessmentState
-from shared_agents import get_assessment_agent
+from .shared_agents import get_assessment_agent
 
 
 # Module-level cache for interview system prompt
