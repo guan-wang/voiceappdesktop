@@ -145,11 +145,20 @@ async def health_check():
 async def list_reports():
     """List all assessment reports"""
     try:
-        reports_dir = os.path.join(os.path.dirname(__file__), "reports")
+        # Check Railway volume mount first, then local
+        railway_reports = "/app/backend/reports"
+        if os.path.exists(railway_reports) and os.path.isdir(railway_reports):
+            reports_dir = railway_reports
+        else:
+            reports_dir = os.path.join(os.path.dirname(__file__), "reports")
         
         # Create directory if it doesn't exist
         if not os.path.exists(reports_dir):
-            return {"reports": [], "count": 0}
+            return {
+                "reports": [],
+                "count": 0,
+                "reports_dir": reports_dir
+            }
         
         # Get all JSON files
         files = [f for f in os.listdir(reports_dir) if f.endswith('.json') and not f.startswith('.')]
@@ -170,7 +179,8 @@ async def list_reports():
         
         return {
             "reports": file_details,
-            "count": len(files)
+            "count": len(files),
+            "reports_dir": reports_dir
         }
         
     except Exception as e:
@@ -192,7 +202,13 @@ async def download_report(filename: str):
                 content={"error": "Invalid filename"}
             )
         
-        reports_dir = os.path.join(os.path.dirname(__file__), "reports")
+        # Check Railway volume mount first, then local
+        railway_reports = "/app/backend/reports"
+        if os.path.exists(railway_reports) and os.path.isdir(railway_reports):
+            reports_dir = railway_reports
+        else:
+            reports_dir = os.path.join(os.path.dirname(__file__), "reports")
+        
         file_path = os.path.join(reports_dir, filename)
         
         if os.path.exists(file_path) and os.path.isfile(file_path):
@@ -204,7 +220,7 @@ async def download_report(filename: str):
         else:
             return JSONResponse(
                 status_code=404,
-                content={"error": "File not found"}
+                content={"error": f"File not found: {file_path}"}
             )
             
     except Exception as e:
