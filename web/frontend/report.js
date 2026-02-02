@@ -115,7 +115,7 @@ class ReportRenderer {
         const centerX = 150;
         const centerY = 150;
         const maxRadius = 110;
-        const levels = 5;
+        const levels = 10;  // Updated to 1-10 scale
         
         // Clear existing content
         svg.innerHTML = '';
@@ -174,7 +174,7 @@ class ReportRenderer {
         const points = domains.map((domain, index) => {
             const angle = angleStep * index - Math.PI / 2;
             const rating = domain.rating;
-            const radius = (maxRadius / 5) * rating;
+            const radius = (maxRadius / 10) * rating;  // Updated to 1-10 scale
             const x = centerX + Math.cos(angle) * radius;
             const y = centerY + Math.sin(angle) * radius;
             return `${x},${y}`;
@@ -192,7 +192,7 @@ class ReportRenderer {
         domains.forEach((domain, index) => {
             const angle = angleStep * index - Math.PI / 2;
             const rating = domain.rating;
-            const radius = (maxRadius / 5) * rating;
+            const radius = (maxRadius / 10) * rating;  // Updated to 1-10 scale
             const x = centerX + Math.cos(angle) * radius;
             const y = centerY + Math.sin(angle) * radius;
             
@@ -212,10 +212,10 @@ class ReportRenderer {
         const container = document.getElementById('domainCards');
         
         container.innerHTML = domains.map((domain, index) => {
-            const ratingBars = Array.from({ length: 5 }, (_, i) => {
+            const ratingBars = Array.from({ length: 10 }, (_, i) => {
                 const filled = i < domain.rating ? 'filled' : '';
                 return `<div class="rating-bar ${filled}"></div>`;
-            }).join('');
+            }).join('');  // Updated to 1-10 scale
             
             return `
                 <div class="domain-card" data-domain="${domain.domain}">

@@ -24,37 +24,36 @@ def _load_system_prompt() -> str:
         
         with open(prompt_path, 'r', encoding='utf-8') as f:
             _SYSTEM_PROMPT_CACHE = f.read().strip()
-        
-        print(f"📋 System prompt loaded ({len(_SYSTEM_PROMPT_CACHE)} chars)")
     
     return _SYSTEM_PROMPT_CACHE
 
 
 class DomainAnalysis(BaseModel):
     """Analysis of a specific linguistic domain"""
-    domain: str  # Fluency | Grammar | Lexical | Phonology | Coherence
-    rating: int  # 1-5 scale
-    observation: str  # Detailed analysis
+    domain: str  # Fluency & Interaction | Grammar | Lexical | Coherence | Pragmatic & Sociolinguistic
+    rating: int  # 1-10 scale (1-2: A1, 3-4: A2, 5-6: B1, 7-8: B2, 9: C1, 10: C2)
+    observation: str  # Detailed analysis with level-specific markers
     evidence: str  # Direct quote from student transcript
 
 
 class AssessmentReport(BaseModel):
-    """Structured assessment report following SSOI specification"""
-    proficiency_level: str  # CEFR/ACTFL Level
-    ceiling_phase: str  # Warm-up, Level-up, or Probe
+    """Structured assessment report following SSOI specification for Korean (KFL)"""
+    proficiency_level: str  # CEFR Level (A1, A2, B1, B2, C1, C2)
+    ceiling_phase: str  # Warm-up, Level-up B1, Level-up B2, Probe C1, or Probe C2
     ceiling_analysis: str  # Detailed explanation of where breakdown occurred
-    domain_analyses: List[DomainAnalysis]  # Analytic breakdown across 5 domains
+    domain_analyses: List[DomainAnalysis]  # Analytic breakdown across 5 domains (Fluency, Grammar, Lexical, Coherence, Pragmatic)
     starting_module: str  # Which curriculum module should they enter
-    logic_errors_to_debug: List[str]  # Top 2 grammatical or lexical patterns to fix
+    logic_errors_to_debug: List[str]  # Top 2 Korean-specific grammatical or lexical patterns to fix
     optimization_strategy: str  # One specific exercise (e.g., Shadowing, Picture Narration)
 
 
 class AssessmentAgent:
     """
-    Senior ESL Examiner agent that produces predictive, data-driven proficiency reports.
-    Uses Semi-Structured Oral Interview (SSOI) methodology.
+    Senior Korean Language Assessor agent that produces predictive, data-driven proficiency reports.
+    Uses Semi-Structured Oral Interview (SSOI) methodology for Korean as a Foreign Language (KFL).
     
     Optimized for speed with pre-loaded system prompt (no tool calling).
+    Accurately distinguishes between all CEFR levels (A1-C2) with Korean-specific assessment criteria.
     """
     
     def __init__(self):
@@ -90,8 +89,6 @@ class AssessmentAgent:
         Returns:
             AssessmentReport: Structured report with proficiency analysis
         """
-        print("\n📊 Assessment Agent starting analysis...")
-        
         # Format the transcript
         transcript = self._format_transcript(conversation_history)
         
@@ -101,8 +98,7 @@ class AssessmentAgent:
             {"role": "user", "content": f"Please analyze this interview transcript and provide a comprehensive proficiency assessment:\n\n{transcript}"}
         ]
         
-        # Single API call with structured output - faster than tool calling!
-        print("🚀 Calling OpenAI API with structured output...")
+        # Single API call with structured output
         structured_response = self.client.beta.chat.completions.parse(
             model="gpt-4o-mini",
             messages=messages,
@@ -112,7 +108,6 @@ class AssessmentAgent:
         )
         
         report = structured_response.choices[0].message.parsed
-        print("✅ Assessment report generated successfully")
         
         return report
     
@@ -143,8 +138,8 @@ class AssessmentAgent:
         strongest = sorted_domains[0]
         weakest = sorted_domains[-1]
         
-        summary_parts.append(f"Your strongest area is {strongest.domain.lower()} with a rating of {strongest.rating} out of 5. {strongest.observation}")
-        summary_parts.append(f"An area to focus on is {weakest.domain.lower()}, rated at {weakest.rating} out of 5. {weakest.observation}")
+        summary_parts.append(f"Your strongest area is {strongest.domain.lower()} with a rating of {strongest.rating} out of 10. {strongest.observation}")
+        summary_parts.append(f"An area to focus on is {weakest.domain.lower()}, rated at {weakest.rating} out of 10. {weakest.observation}")
         
         # Learning recommendations
         summary_parts.append(f"\nI recommend starting with the {report.starting_module} module.")
