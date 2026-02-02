@@ -15,18 +15,25 @@ from typing import Optional
 import sys
 
 # Add paths to import core modules
-# Go up 3 levels: realtime_bridge.py -> backend -> web -> project_root
+# Try multiple possible project roots for Railway compatibility
 backend_dir = os.path.dirname(os.path.abspath(__file__))
 web_dir = os.path.dirname(backend_dir)
-project_root = os.path.dirname(web_dir)
+local_root = os.path.dirname(web_dir)
 
-# Handle edge case where path might be root
-if not project_root or project_root in ('/', '\\'):
-    project_root = os.path.abspath(os.path.join(backend_dir, '..', '..'))
+# Possible project roots (Railway vs local)
+possible_roots = [
+    "/app",  # Railway standard
+    local_root,  # Local development
+]
 
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-    print(f"📂 Added to sys.path: {project_root}")
+# Add the first valid root that contains 'core' directory
+for root in possible_roots:
+    if root and root not in sys.path:
+        core_path = os.path.join(root, "core")
+        if os.path.isdir(core_path):
+            sys.path.insert(0, root)
+            print(f"📂 Added to sys.path: {root}")
+            break
 
 from core import AssessmentStateMachine, AssessmentState
 
@@ -48,27 +55,43 @@ def _load_interview_system_prompt() -> str:
     global _INTERVIEW_SYSTEM_PROMPT_CACHE
     if _INTERVIEW_SYSTEM_PROMPT_CACHE is None:
         import os
-        # Get project root - handle both local and Railway paths
+        
+        # Try multiple possible locations
+        possible_paths = [
+            # Railway production (likely structure)
+            "/app/core/resources/interview_system_prompt.txt",
+            # Railway alternative structure
+            "/app/backend/core/resources/interview_system_prompt.txt",
+            # Relative from current file (local development)
+            None  # Calculated below
+        ]
+        
+        # Calculate relative path from current file
         backend_dir = os.path.dirname(os.path.abspath(__file__))
         web_dir = os.path.dirname(backend_dir)
         project_root = os.path.dirname(web_dir)
+        relative_path = os.path.join(project_root, "core", "resources", "interview_system_prompt.txt")
+        possible_paths[2] = os.path.normpath(relative_path)
         
-        # If project_root is empty or root, we're likely in Railway with different structure
-        if not project_root or project_root == '/' or project_root == '\\':
-            # On Railway: /app/web/backend/realtime_bridge.py
-            # Try using the parent of sys.path[0] which points to project root
-            import sys
-            if sys.path[0]:
-                project_root = sys.path[0]
-            else:
-                # Last resort: go up from current file location
-                project_root = os.path.join(backend_dir, '..', '..')
+        # Try each path until we find the file
+        prompt_path = None
+        for path in possible_paths:
+            if path and os.path.isfile(path):
+                prompt_path = path
+                print(f"📋 Found interview prompt at: {prompt_path}")
+                break
         
-        project_root = os.path.abspath(project_root)
-        prompt_path = os.path.join(project_root, "core", "resources", "interview_system_prompt.txt")
-        prompt_path = os.path.normpath(prompt_path)
-        
-        print(f"📋 Loading interview prompt from: {prompt_path}")
+        if not prompt_path:
+            # Debug info
+            print(f"❌ Could not find interview_system_prompt.txt")
+            print(f"   Tried paths:")
+            for p in possible_paths:
+                exists = "EXISTS" if p and os.path.isfile(p) else "NOT FOUND"
+                print(f"   - {p} [{exists}]")
+            print(f"   backend_dir: {backend_dir}")
+            print(f"   web_dir: {web_dir}")
+            print(f"   project_root: {project_root}")
+            raise FileNotFoundError(f"interview_system_prompt.txt not found. Tried: {possible_paths}")
         
         with open(prompt_path, 'r', encoding='utf-8') as f:
             _INTERVIEW_SYSTEM_PROMPT_CACHE = f.read().strip()
