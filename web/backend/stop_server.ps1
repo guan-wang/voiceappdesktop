@@ -1,9 +1,9 @@
 # Stop the Korean Voice Tutor web server
-# Kills any process using port 7860
+# Kills any process using port 8080
 
-Write-Host "🔍 Looking for server on port 7860..." -ForegroundColor Cyan
+Write-Host "🔍 Looking for server on port 8080..." -ForegroundColor Cyan
 
-$connections = netstat -ano | Select-String ":7860" | Select-String "LISTENING"
+$connections = netstat -ano | Select-String ":8080" | Select-String "LISTENING"
 
 if ($connections) {
     $connections | ForEach-Object {
@@ -22,7 +22,7 @@ if ($connections) {
         }
     }
 } else {
-    Write-Host "✅ No server running on port 7860" -ForegroundColor Green
+    Write-Host "✅ No server running on port 8080" -ForegroundColor Green
 }
 
 Write-Host "`n📝 You can now start the server with: uv run python server.py" -ForegroundColor Cyan

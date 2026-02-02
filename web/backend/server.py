@@ -23,8 +23,21 @@ if sys.platform == 'win32':
         except:
             pass
 
-from .session_store import session_store
-from .realtime_bridge import RealtimeBridge
+# Handle imports - works both for direct execution and as module
+try:
+    # Try relative imports first (Railway deployment, run as module)
+    from .session_store import session_store
+    from .realtime_bridge import RealtimeBridge
+except ImportError:
+    # Fall back to absolute imports (local development, direct execution)
+    # Add parent directory to path for imports
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    web_dir = os.path.dirname(backend_dir)
+    project_dir = os.path.dirname(web_dir)
+    sys.path.insert(0, project_dir)
+    
+    from web.backend.session_store import session_store
+    from web.backend.realtime_bridge import RealtimeBridge
 
 # Load environment variables
 load_dotenv()
@@ -34,20 +47,16 @@ load_dotenv()
 async def lifespan(app: FastAPI):
     """Lifespan event handler for startup and shutdown"""
     # Startup
-    print("🚀 Starting Korean Voice Tutor Web Server...")
-    print(f"📊 API Key configured: {bool(os.getenv('OPENAI_API_KEY'))}")
+    print("🚀 Korean Voice Tutor Web Server")
+    print(f"📊 API Key: {'✓' if os.getenv('OPENAI_API_KEY') else '✗'}")
     
     # Start session cleanup task
     session_store.start_cleanup_task()
-    print("✅ Session cleanup task started")
     
     yield
     
     # Shutdown
-    print("\n👋 Shutting down server...")
-    
-    # Cancel all active sessions and their tasks with timeout
-    print("🧹 Cleaning up active sessions...")
+    print("\n👋 Shutting down...")
     try:
         await asyncio.wait_for(
             session_store.shutdown_all_sessions(),
@@ -218,7 +227,7 @@ async def websocket_endpoint(websocket: WebSocket):
     session = session_store.create_session()
     session.is_active = True
     
-    print(f"🔌 [{session.session_id[:8]}] Client connected")
+    print(f"🔌 [{session.session_id[:8]}] Connected")
     
     # Send session ID to client
     await websocket.send_json({
@@ -253,17 +262,16 @@ async def websocket_endpoint(websocket: WebSocket):
             
             elif message_type == "end_session":
                 # Client requested to end session
-                print(f"👋 [{session.session_id[:8]}] Client ended session")
                 break
             
             else:
                 print(f"⚠️ [{session.session_id[:8]}] Unknown message type: {message_type}")
     
     except WebSocketDisconnect:
-        print(f"🔌 [{session.session_id[:8]}] Client disconnected")
+        print(f"🔌 [{session.session_id[:8]}] Disconnected")
     
     except Exception as e:
-        print(f"❌ [{session.session_id[:8]}] WebSocket error: {e}")
+        print(f"❌ [{session.session_id[:8]}] Error: {e}")
     
     finally:
         # Cleanup
@@ -285,8 +293,6 @@ async def websocket_endpoint(websocket: WebSocket):
         
         # Remove session
         session_store.remove_session(session.session_id)
-        
-        print(f"✅ [{session.session_id[:8]}] Session cleanup complete")
 
 
 def main():
@@ -308,16 +314,11 @@ def main():
     
     protocol = "https" if use_ssl else "http"
     
-    print(f"\n🌐 Starting server on {protocol}://localhost:{port}")
-    print(f"📱 Open in browser: {protocol}://localhost:{port}")
-    
+    print(f"\n🌐 Server: {protocol}://localhost:{port}")
     if use_ssl:
-        print(f"🔒 HTTPS enabled (SSL certificates found)")
-        print(f"   Certificate: cert.pem")
-        print(f"   Key: key.pem")
+        print(f"🔒 HTTPS enabled")
     else:
-        print(f"⚠️  HTTP only (no SSL certificates)")
-        print(f"   For mobile microphone access, run: .\\setup_https_python.ps1")
+        print(f"⚠️  HTTP only (run .\\setup_https_python.ps1 for mobile access)")
     
     print("\nPress Ctrl+C to stop\n")
     

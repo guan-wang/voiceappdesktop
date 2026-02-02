@@ -18,7 +18,14 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from core import AssessmentStateMachine, AssessmentState
-from .shared_agents import get_assessment_agent
+
+# Handle import - works both for direct execution and as module
+try:
+    # Try relative import first (Railway deployment)
+    from .shared_agents import get_assessment_agent
+except ImportError:
+    # Fall back to absolute import (local development)
+    from web.backend.shared_agents import get_assessment_agent
 
 
 # Module-level cache for interview system prompt
@@ -30,15 +37,15 @@ def _load_interview_system_prompt() -> str:
     global _INTERVIEW_SYSTEM_PROMPT_CACHE
     if _INTERVIEW_SYSTEM_PROMPT_CACHE is None:
         import os
-        # Get /app directory (go up 2 levels: backend -> app)
-        app_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        prompt_path = os.path.join(app_dir, "core", "resources", "interview_system_prompt.txt")
+        # Get project root (go up 3 levels: backend -> web -> korean_voice_tutor)
+        backend_dir = os.path.dirname(os.path.abspath(__file__))
+        web_dir = os.path.dirname(backend_dir)
+        project_root = os.path.dirname(web_dir)
+        prompt_path = os.path.join(project_root, "core", "resources", "interview_system_prompt.txt")
         prompt_path = os.path.normpath(prompt_path)
         
         with open(prompt_path, 'r', encoding='utf-8') as f:
             _INTERVIEW_SYSTEM_PROMPT_CACHE = f.read().strip()
-        
-        print(f"📋 Interview system prompt loaded ({len(_INTERVIEW_SYSTEM_PROMPT_CACHE)} chars)")
     
     return _INTERVIEW_SYSTEM_PROMPT_CACHE
 
@@ -70,6 +77,14 @@ class RealtimeBridge:
         # Audio chunk tracking (to avoid excessive logging)
         self.audio_chunk_count = 0
         self.audio_total_bytes = 0
+        
+        # Audio-transcript sync tracking (for diagnostics)
+        self.current_response_id = None
+        self.audio_done_flag = False
+        self.transcript_done_flag = False
+        self.audio_done_timestamp = None
+        self.transcript_done_timestamp = None
+        self.transcript_length = 0
         
         # Track background tasks for cleanup
         self.background_tasks = set()
@@ -149,7 +164,7 @@ class RealtimeBridge:
                 "OpenAI-Beta": "realtime=v1"
             }
             
-            print(f"🔌 [{self.session.session_id[:8]}] Connecting to OpenAI Realtime API...")
+            print(f"🔌 [{self.session.session_id[:8]}] Connecting to OpenAI...")
             
             # Create SSL context for macOS compatibility with certifi
             ssl_context = ssl.create_default_context(cafile=certifi.where())
@@ -162,15 +177,8 @@ class RealtimeBridge:
                 # Send session configuration
                 config = self.get_session_config()
                 
-                # Debug: show tools being registered
-                tools = config.get("session", {}).get("tools", [])
-                print(f"🔧 [{self.session.session_id[:8]}] Registering {len(tools)} tools with OpenAI:")
-                for tool in tools:
-                    print(f"   📎 {tool.get('name', 'unknown')}: {tool.get('description', '')[:60]}...")
-                
-                print(f"📤 [{self.session.session_id[:8]}] Sending session config...")
                 await websocket.send(json.dumps(config))
-                print(f"✅ [{self.session.session_id[:8]}] Connected to OpenAI, config sent")
+                print(f"✅ [{self.session.session_id[:8]}] Connected")
                 
                 # Send session info to client
                 await self.send_to_client({
@@ -178,8 +186,6 @@ class RealtimeBridge:
                     "session_id": self.session.session_id,
                     "message": "Ready to start interview"
                 })
-                
-                print(f"✅ [{self.session.session_id[:8]}] Interview guidance pre-loaded in system prompt")
                 
                 # Notify client that setup is complete
                 await self.send_to_client({
@@ -205,9 +211,9 @@ class RealtimeBridge:
                 await self.process_openai_event(event)
                 
         except websockets.exceptions.ConnectionClosed:
-            print(f"🔌 [{self.session.session_id[:8]}] OpenAI connection closed")
+            pass  # Expected on disconnect
         except Exception as e:
-            print(f"❌ [{self.session.session_id[:8]}] Error handling OpenAI events: {e}")
+            print(f"❌ [{self.session.session_id[:8]}] OpenAI error: {e}")
     
     async def process_openai_event(self, event: dict):
         """Process a single event from OpenAI"""
@@ -224,16 +230,17 @@ class RealtimeBridge:
                 # Other events - just log type for context
                 print(f"📨 [{self.session.session_id[:8]}] Event: {event_type}")
         
+        # Track response lifecycle
+        if event_type == "response.created":
+            response_id = event.get("response", {}).get("id") or event.get("response_id")
+            print(f"🚀 [{self.session.session_id[:8]}] Response started: {response_id}")
+        
         # Handle events (separate from logging)
         if event_type == "response.audio.delta":
-            # Forward AI audio to client
+            # Forward AI audio to client (no logging - too spammy)
             chunk_size = len(event.get("delta", ""))
             self.audio_chunk_count += 1
             self.audio_total_bytes += chunk_size
-            
-            # Only log every 10th chunk to reduce noise
-            if self.audio_chunk_count % 10 == 0:
-                print(f"🔊 [{self.session.session_id[:8]}] Audio chunks: {self.audio_chunk_count} ({self.audio_total_bytes} bytes)")
             
             await self.send_to_client({
                 "type": "ai_audio",
@@ -242,15 +249,16 @@ class RealtimeBridge:
             })
         
         elif event_type == "response.audio.done":
-            # Audio generation complete - notify client
-            print(f"✅ [{self.session.session_id[:8]}] Audio generation done - sent {self.audio_chunk_count} chunks ({self.audio_total_bytes} bytes)")
-            await self.send_to_client({
-                "type": "ai_audio_done",
-                "response_id": event.get("response_id")
-            })
-            # Reset counters for next response
-            self.audio_chunk_count = 0
-            self.audio_total_bytes = 0
+            # Audio generation complete - mark flag but DON'T notify client yet
+            response_id = event.get("response_id")
+            self.audio_done_flag = True
+            self.audio_done_timestamp = asyncio.get_event_loop().time()
+            self.current_response_id = response_id
+            
+            print(f"🔊 [{self.session.session_id[:8]}] Audio done: {self.audio_chunk_count} chunks, {self.audio_total_bytes} bytes")
+            
+            # Check if both audio and transcript are done
+            await self._check_response_complete()
         
         elif event_type == "response.audio_transcript.delta":
             # Accumulate transcript
@@ -259,11 +267,17 @@ class RealtimeBridge:
                 self.session.transcript_buffer += delta
         
         elif event_type == "response.audio_transcript.done":
-            # Send complete AI transcript to client
+            # Transcript complete - mark flag but wait for audio
             if self.session.transcript_buffer:
                 ai_text = self.session.transcript_buffer
-                print(f"🤖 [{self.session.session_id[:8]}] AI: {ai_text[:50]}...")
+                self.transcript_length = len(ai_text)
+                self.transcript_done_flag = True
+                self.transcript_done_timestamp = asyncio.get_event_loop().time()
                 
+                print(f"📝 [{self.session.session_id[:8]}] Transcript done: {self.transcript_length} chars")
+                print(f"🤖 [{self.session.session_id[:8]}] {ai_text}")
+                
+                # Send transcript to client immediately
                 await self.send_to_client({
                     "type": "ai_transcript",
                     "text": ai_text
@@ -274,6 +288,9 @@ class RealtimeBridge:
                     self.session.add_conversation_turn("AI", ai_text)
                 
                 self.session.transcript_buffer = ""
+                
+                # Check if both audio and transcript are done
+                await self._check_response_complete()
         
         elif event_type == "conversation.item.input_audio_transcription.delta":
             # User speech transcription delta (incremental)
@@ -294,7 +311,8 @@ class RealtimeBridge:
             else:
                 transcript = event.get("transcript", "")
             
-            print(f"👤 [{self.session.session_id[:8]}] User: {transcript[:50]}...")
+            # Enhanced logging for user input
+            print(f"👤 [{self.session.session_id[:8]}] User ({len(transcript)} chars): {transcript}")
             
             await self.send_to_client({
                 "type": "user_transcript",
@@ -307,22 +325,19 @@ class RealtimeBridge:
         
         elif event_type == "response.function_call_arguments.done":
             # Handle function calls
-            print(f"📞 [{self.session.session_id[:8]}] Detected function call event")
             await self.handle_function_call(event)
         
         elif event_type == "response.output_item.done":
             # Alternative event for function calls
             item = event.get("item", {})
             if item.get("type") == "function_call":
-                print(f"📞 [{self.session.session_id[:8]}] Detected function call via output_item.done")
                 await self.handle_function_call(event)
         
         elif event_type == "response.done":
-            # Response complete
+            # OpenAI says response complete - just clear the flag
             self.response_in_progress = False
-            await self.send_to_client({
-                "type": "response_complete"
-            })
+            # Note: We don't send "response_complete" to client yet
+            # We wait for _check_response_complete() to confirm audio+transcript sync
         
         elif event_type == "error":
             error = event.get("error", {})
@@ -332,11 +347,48 @@ class RealtimeBridge:
                 "message": error.get("message", "Unknown error")
             })
     
+    async def _check_response_complete(self):
+        """Check if both audio and transcript are complete, then notify client"""
+        if self.audio_done_flag and self.transcript_done_flag:
+            # Both done - calculate timing delta
+            time_delta = abs(self.transcript_done_timestamp - self.audio_done_timestamp)
+            
+            # Diagnostic logging
+            print(f"✅ [{self.session.session_id[:8]}] Response complete")
+            print(f"   Audio: {self.audio_chunk_count} chunks, {self.audio_total_bytes} bytes")
+            print(f"   Transcript: {self.transcript_length} chars")
+            print(f"   Timing delta: {time_delta*1000:.1f}ms")
+            
+            # Calculate expected audio duration (rough estimate)
+            # Korean TTS is roughly 8-12 chars/second, audio is 16kHz PCM16 = 32KB/sec
+            expected_bytes = self.transcript_length * 2666  # ~12 chars/sec * 32KB/sec
+            byte_ratio = self.audio_total_bytes / expected_bytes if expected_bytes > 0 else 1.0
+            
+            if byte_ratio < 0.7:
+                print(f"⚠️ [{self.session.session_id[:8]}] WARNING: Audio seems short for transcript length")
+                print(f"   Expected ~{expected_bytes} bytes, got {self.audio_total_bytes} ({byte_ratio*100:.0f}%)")
+            
+            # Notify client that audio is truly done
+            await self.send_to_client({
+                "type": "ai_audio_done",
+                "response_id": self.current_response_id
+            })
+            
+            # Send response_complete to client
+            await self.send_to_client({
+                "type": "response_complete"
+            })
+            
+            # Reset flags for next response
+            self.audio_done_flag = False
+            self.transcript_done_flag = False
+            self.audio_chunk_count = 0
+            self.audio_total_bytes = 0
+            self.transcript_length = 0
+            self.current_response_id = None
+    
     async def handle_function_call(self, event: dict):
         """Handle function/tool calls from OpenAI"""
-        # Debug: print full event structure
-        print(f"🔍 [{self.session.session_id[:8]}] Function call event: {json.dumps(event, indent=2)}")
-        
         # Extract function call info - try multiple possible structures
         function_call = event.get("function_call", {})
         item = event.get("item", {})
@@ -358,14 +410,12 @@ class RealtimeBridge:
             event.get("item_id")
         )
         
-        print(f"🔧 [{self.session.session_id[:8]}] Function call: {function_name} (call_id: {call_id})")
-        
         if not function_name:
             print(f"⚠️ [{self.session.session_id[:8]}] No function name found in event!")
             return
         
         if function_name == "trigger_assessment":
-            print(f"🔔 [{self.session.session_id[:8]}] trigger_assessment called!")
+            print(f"🔔 [{self.session.session_id[:8]}] Assessment triggered")
             
             # Extract reason
             arguments = function_call.get("arguments", {})
@@ -376,11 +426,8 @@ class RealtimeBridge:
                     arguments = {}
             reason = arguments.get("reason", "Linguistic ceiling reached")
             
-            print(f"📊 [{self.session.session_id[:8]}] Assessment reason: {reason}")
-            
             # Trigger assessment
             if self.session.assessment_state.trigger_assessment(reason):
-                print(f"✅ [{self.session.session_id[:8]}] Assessment state machine triggered")
                 
                 # DON'T send acknowledgment here - go straight to assessment
                 # The old flow caused the AI to keep repeating the acknowledgment
@@ -390,7 +437,6 @@ class RealtimeBridge:
                     "type": "assessment_triggered",
                     "message": "Generating assessment..."
                 })
-                print(f"📱 [{self.session.session_id[:8]}] Client notified")
                 
                 # Send empty tool output to complete this function call
                 await self.send_tool_output(
@@ -399,7 +445,6 @@ class RealtimeBridge:
                 )
                 
                 # Generate assessment in background (don't block WebSocket)
-                print(f"🚀 [{self.session.session_id[:8]}] Launching assessment generation...")
                 task = asyncio.create_task(self._generate_and_deliver_assessment())
                 self.background_tasks.add(task)
                 task.add_done_callback(self.background_tasks.discard)
@@ -410,7 +455,7 @@ class RealtimeBridge:
         """Generate assessment report and deliver it (runs in background)"""
         keepalive_task = None
         try:
-            print(f"🔍 [{self.session.session_id[:8]}] Starting assessment generation...")
+            print(f"📊 [{self.session.session_id[:8]}] Generating assessment...")
             
             # Start keepalive task to prevent WebSocket timeout
             keepalive_task = asyncio.create_task(self._keepalive_during_assessment())
@@ -425,12 +470,9 @@ class RealtimeBridge:
             })
             
             # Generate report (this can take 5-10 seconds)
-            print(f"🧠 [{self.session.session_id[:8]}] Calling assessment agent...")
             conversation_history = self.session.get_conversation_history()
-            print(f"📊 [{self.session.session_id[:8]}] Conversation length: {len(conversation_history)} turns")
             
             report = self.assessment_agent.generate_assessment(conversation_history)
-            print(f"✅ [{self.session.session_id[:8]}] Report generated")
             
             # Send progress update
             await self.send_to_client({
@@ -440,52 +482,43 @@ class RealtimeBridge:
             })
             
             verbal_summary = self.assessment_agent.report_to_verbal_summary(report)
-            print(f"📝 [{self.session.session_id[:8]}] Verbal summary created")
-            print(f"📋 [{self.session.session_id[:8]}] Assessment complete: {report.proficiency_level}")
+            print(f"✅ [{self.session.session_id[:8]}] Assessment complete: {report.proficiency_level}")
             
-            # FIX #3: Stop keepalive and await cancellation properly
+            # Stop keepalive task
             if keepalive_task and not keepalive_task.done():
-                print(f"🛑 [{self.session.session_id[:8]}] Stopping keepalive task...")
                 keepalive_task.cancel()
                 try:
                     await keepalive_task
                 except asyncio.CancelledError:
-                    print(f"✅ [{self.session.session_id[:8]}] Keepalive cancelled cleanly")
                     pass
             
-            # FIX #1: Only cancel if there's actually a response in progress
+            # Cancel any active response
             if self.response_in_progress:
                 try:
-                    print(f"🔇 [{self.session.session_id[:8]}] Cancelling active response...")
                     await self.openai_ws.send(json.dumps({
                         "type": "response.cancel"
                     }))
-                    self.response_in_progress = False  # Force clear immediately
-                    await asyncio.sleep(0.5)  # FIX #2: Longer wait (500ms instead of 300ms)
-                    print(f"✅ [{self.session.session_id[:8]}] Response cancelled")
+                    self.response_in_progress = False
+                    await asyncio.sleep(0.5)
                 except Exception as e:
                     print(f"⚠️ [{self.session.session_id[:8]}] Could not cancel response: {e}")
-                    self.response_in_progress = False  # Force clear on error
-            else:
-                print(f"ℹ️ [{self.session.session_id[:8]}] No active response to cancel")
+                    self.response_in_progress = False
             
-            # FIX #4: Clear any lingering audio buffers
+            # Clear any lingering audio buffers
             try:
                 await self.openai_ws.send(json.dumps({
                     "type": "input_audio_buffer.clear"
                 }))
-                await asyncio.sleep(0.2)  # Let buffer clear
+                await asyncio.sleep(0.2)
             except Exception as e:
                 print(f"⚠️ [{self.session.session_id[:8]}] Could not clear audio buffer: {e}")
             
-            # CRITICAL: Send report to client FIRST (before trying to speak)
-            # This ensures the visual report shows even if speech fails
+            # Send report to client
             await self.send_to_client({
                 "type": "assessment_complete",
                 "report": report.model_dump(),
                 "summary": verbal_summary
             })
-            print(f"✅ [{self.session.session_id[:8]}] Assessment report sent to client")
             
             # Save report to file
             self.session.save_assessment_report(report, verbal_summary)

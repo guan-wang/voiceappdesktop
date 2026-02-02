@@ -6,7 +6,7 @@ Write-Host "🔥 Windows Firewall Configuration" -ForegroundColor Cyan
 Write-Host "=" -NoNewline; Write-Host ("=" * 50)
 Write-Host ""
 
-$ruleName = "Korean Voice Tutor Web App (Port 7860)"
+$ruleName = "Korean Voice Tutor Web App (Port 8080)"
 
 # Check if rule already exists
 $existingRule = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
@@ -18,12 +18,12 @@ if ($existingRule) {
     Write-Host "   Remove-NetFirewallRule -DisplayName '$ruleName'" -ForegroundColor White
 } else {
     try {
-        # Create firewall rule for inbound connections on port 7860
+        # Create firewall rule for inbound connections on port 8080
         New-NetFirewallRule `
             -DisplayName $ruleName `
             -Direction Inbound `
             -Protocol TCP `
-            -LocalPort 7860 `
+            -LocalPort 8080 `
             -Action Allow `
             -Profile Any `
             -ErrorAction Stop | Out-Null
@@ -31,7 +31,7 @@ if ($existingRule) {
         Write-Host "✅ Firewall rule created successfully!" -ForegroundColor Green
         Write-Host ""
         Write-Host "   Rule Name: $ruleName" -ForegroundColor White
-        Write-Host "   Port: 7860" -ForegroundColor White
+        Write-Host "   Port: 8080" -ForegroundColor White
         Write-Host "   Direction: Inbound" -ForegroundColor White
         Write-Host "   Action: Allow" -ForegroundColor White
         Write-Host ""

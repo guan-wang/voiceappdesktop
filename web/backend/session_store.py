@@ -40,13 +40,22 @@ class UserSession:
             import json
             from datetime import datetime
             
-            # Create reports directory
-            reports_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "reports")
+            # Create reports directory in backend folder
+            backend_dir = os.path.dirname(os.path.abspath(__file__))
+            reports_dir = os.path.join(backend_dir, "reports")
             os.makedirs(reports_dir, exist_ok=True)
             
             # Generate filename
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             report_path = os.path.join(reports_dir, f"web_assessment_{timestamp}.json")
+            
+            # Format conversation history for the report
+            conversation_transcript = []
+            for speaker, text in self.conversation_history:
+                conversation_transcript.append({
+                    "speaker": speaker,
+                    "text": text
+                })
             
             # Save report with survey structure
             report_dict = {
@@ -54,6 +63,7 @@ class UserSession:
                 "timestamp": datetime.now().isoformat(),
                 "report": report.model_dump() if hasattr(report, 'model_dump') else report,
                 "verbal_summary": verbal_summary,
+                "conversation_history": conversation_transcript,
                 "conversation_length": len(self.conversation_history),
                 "survey": {
                     "completed": False,
@@ -70,10 +80,12 @@ class UserSession:
             with open(report_path, 'w', encoding='utf-8') as f:
                 json.dump(report_dict, f, indent=2, ensure_ascii=False)
             
-            print(f"💾 Assessment report saved: {report_path}")
+            print(f"💾 [{self.session_id[:8]}] Saved: {report_path}")
             
         except Exception as e:
-            print(f"⚠️ Error saving assessment report: {e}")
+            print(f"⚠️ [{self.session_id[:8]}] Save failed: {e}")
+            import traceback
+            traceback.print_exc()
         
         # Function tracking
         self.guidance_loaded = False
@@ -110,7 +122,7 @@ class SessionStore:
         session_id = str(uuid.uuid4())
         session = UserSession(session_id)
         self.sessions[session_id] = session
-        print(f"✅ Created session: {session_id[:8]}...")
+        print(f"✅ Session {session_id[:8]}")
         return session
     
     def get_session(self, session_id: str) -> Optional[UserSession]:
@@ -133,7 +145,6 @@ class SessionStore:
                 session.openai_task.cancel()
             
             del self.sessions[session_id]
-            print(f"🗑️ Removed session: {session_id[:8]}...")
     
     async def cleanup_stale_sessions(self):
         """Periodically clean up stale sessions"""
@@ -147,7 +158,7 @@ class SessionStore:
                 ]
                 
                 for session_id in stale_sessions:
-                    print(f"🧹 Cleaning up stale session: {session_id[:8]}...")
+                    print(f"🧹 Stale session {session_id[:8]}")
                     self.remove_session(session_id)
                     
             except asyncio.CancelledError:
@@ -164,10 +175,9 @@ class SessionStore:
         """Shutdown all active sessions and cancel their tasks"""
         session_count = len(self.sessions)
         if session_count == 0:
-            print("✅ No active sessions to shutdown")
             return
-            
-        print(f"🧹 Shutting down {session_count} active session(s)...")
+        
+        print(f"🧹 Shutting down {session_count} session(s)...")
         
         # Cancel cleanup task first
         if self._cleanup_task and not self._cleanup_task.done():
@@ -194,11 +204,10 @@ class SessionStore:
                     timeout=3.0
                 )
             except asyncio.TimeoutError:
-                print("⚠️ Some sessions didn't cleanup in time, forcing shutdown")
+                print("⚠️ Some sessions didn't cleanup in time")
         
         # Force clear any remaining sessions
         self.sessions.clear()
-        print("✅ All sessions shut down")
     
     async def _cleanup_single_session(self, session, session_id):
         """Cleanup a single session"""
@@ -232,8 +241,9 @@ class SessionStore:
         import json
         from datetime import datetime
         
-        # Get reports directory
-        reports_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "reports")
+        # Get reports directory in backend folder
+        backend_dir = os.path.dirname(os.path.abspath(__file__))
+        reports_dir = os.path.join(backend_dir, "reports")
         
         # Find the assessment file for this session
         pattern = os.path.join(reports_dir, "web_assessment_*.json")
@@ -279,7 +289,8 @@ class SessionStore:
         # Atomic rename (safe even if process crashes)
         os.replace(temp_path, target_file)
         
-        print(f"✅ Survey appended to assessment: {target_file}")
+        print(f"💾 [{session_id[:8]}] Survey appended: {target_file}")
+        
         return target_file
     
     def get_active_session_count(self) -> int:

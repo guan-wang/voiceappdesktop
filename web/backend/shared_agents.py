@@ -30,8 +30,6 @@ def get_assessment_agent() -> AssessmentAgent:
     global _shared_assessment_agent
     
     if _shared_assessment_agent is None:
-        print("🔧 Initializing shared assessment agent...")
         _shared_assessment_agent = AssessmentAgent()
-        print("✅ Shared assessment agent ready")
     
     return _shared_assessment_agent
