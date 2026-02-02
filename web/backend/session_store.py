@@ -40,9 +40,20 @@ class UserSession:
             import json
             from datetime import datetime
             
-            # Create reports directory in backend folder
+            # Determine reports directory
+            # Railway: Volume mounted at /app/backend/reports
+            # Local: web/backend/reports
             backend_dir = os.path.dirname(os.path.abspath(__file__))
-            reports_dir = os.path.join(backend_dir, "reports")
+            
+            # Check if we're on Railway (volume mount exists)
+            railway_reports = "/app/backend/reports"
+            if os.path.exists(railway_reports) and os.path.isdir(railway_reports):
+                reports_dir = railway_reports
+                print(f"📂 [{self.session_id[:8]}] Using Railway volume: {reports_dir}")
+            else:
+                # Local development
+                reports_dir = os.path.join(backend_dir, "reports")
+            
             os.makedirs(reports_dir, exist_ok=True)
             
             # Generate filename
@@ -241,9 +252,16 @@ class SessionStore:
         import json
         from datetime import datetime
         
-        # Get reports directory in backend folder
+        # Determine reports directory (same logic as save_assessment_report)
         backend_dir = os.path.dirname(os.path.abspath(__file__))
-        reports_dir = os.path.join(backend_dir, "reports")
+        
+        # Check if we're on Railway (volume mount exists)
+        railway_reports = "/app/backend/reports"
+        if os.path.exists(railway_reports) and os.path.isdir(railway_reports):
+            reports_dir = railway_reports
+        else:
+            # Local development
+            reports_dir = os.path.join(backend_dir, "reports")
         
         # Find the assessment file for this session
         pattern = os.path.join(reports_dir, "web_assessment_*.json")

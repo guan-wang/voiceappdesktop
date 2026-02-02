@@ -15,7 +15,18 @@ from typing import Optional
 import sys
 
 # Add paths to import core modules
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+# Go up 3 levels: realtime_bridge.py -> backend -> web -> project_root
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+web_dir = os.path.dirname(backend_dir)
+project_root = os.path.dirname(web_dir)
+
+# Handle edge case where path might be root
+if not project_root or project_root in ('/', '\\'):
+    project_root = os.path.abspath(os.path.join(backend_dir, '..', '..'))
+
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+    print(f"📂 Added to sys.path: {project_root}")
 
 from core import AssessmentStateMachine, AssessmentState
 
@@ -37,12 +48,27 @@ def _load_interview_system_prompt() -> str:
     global _INTERVIEW_SYSTEM_PROMPT_CACHE
     if _INTERVIEW_SYSTEM_PROMPT_CACHE is None:
         import os
-        # Get project root (go up 3 levels: backend -> web -> korean_voice_tutor)
+        # Get project root - handle both local and Railway paths
         backend_dir = os.path.dirname(os.path.abspath(__file__))
         web_dir = os.path.dirname(backend_dir)
         project_root = os.path.dirname(web_dir)
+        
+        # If project_root is empty or root, we're likely in Railway with different structure
+        if not project_root or project_root == '/' or project_root == '\\':
+            # On Railway: /app/web/backend/realtime_bridge.py
+            # Try using the parent of sys.path[0] which points to project root
+            import sys
+            if sys.path[0]:
+                project_root = sys.path[0]
+            else:
+                # Last resort: go up from current file location
+                project_root = os.path.join(backend_dir, '..', '..')
+        
+        project_root = os.path.abspath(project_root)
         prompt_path = os.path.join(project_root, "core", "resources", "interview_system_prompt.txt")
         prompt_path = os.path.normpath(prompt_path)
+        
+        print(f"📋 Loading interview prompt from: {prompt_path}")
         
         with open(prompt_path, 'r', encoding='utf-8') as f:
             _INTERVIEW_SYSTEM_PROMPT_CACHE = f.read().strip()
