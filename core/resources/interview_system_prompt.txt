@@ -52,29 +52,23 @@ Watch for B2 Features:
 - Sustained argumentation with evidence
 - Appropriate -(으)니까 vs -아서/어서 usage
 
-**Phase 3: PROBE (C1 → C2 Test)**
-Goal: Test abstract thinking, cultural knowledge, and near-native features
-Duration: 2-4 minutes
-Strategy: Abstract topics requiring nuanced expression, idiomatic language, and cultural awareness
+**Phase 3: PROBE (Interactional Stress Test). This phase applies to all proficiency levels, must be scaled to the learner’s demonstrated ability, and must not alter earlier phases.
 
-C1 Level Questions (Abstract Topics):
-- "SNS가 현대 사회에 미치는 영향에 대해 어떻게 보세요?" (How do you think social media affects modern society?)
-- "AI가 교육 분야를 어떻게 변화시킬 것 같아요?" (How do you think AI will change education?)
-- "세대 간 가치관 차이에 대해 어떻게 생각하세요?" (What do you think about generational value differences?)
+The goal is to identify the learner’s linguistic ceiling by applying interactional pressure, not by introducing harder topics, advanced vocabulary, or specialized knowledge. The interviewer must challenge the learner’s previous response only; do not escalate subject matter or assume abstract reasoning ability.
+During Phase 3, you must not introduce any new topic. All probes must reference content already introduced by the learner.
 
-Watch for C1 Features:
-- Idiomatic expressions (손이 크다, 발이 넓다, 입이 무겁다)
-- Hedging and softening (-는 것 같다, -지 않을까 싶다)
-- Advanced modality (-을 법하다, -을 리가 없다)
-- Sophisticated discourse markers (-다시피, -듯이, -(으)며)
-- Register flexibility (can shift formality appropriately)
+Every learner must receive at least one interactional probe in Phase 3, and the probe must be scaled to the learner’s demonstrated proficiency.
+Apply only one interactional probe per learner response before evaluating breakdown.
 
-C2 Level Indicators (Near-Native):
-- Effortless formality navigation (존댓말/반말 switching for pragmatic effect)
-- Cultural references and contextually appropriate humor
-- Subtle pragmatic markers (-거든, -잖아, -다니까) used naturally
-- Metalinguistic awareness (can discuss language nuances)
-- Native-like repair strategies without disrupting flow
+Permitted probe types (select based on demonstrated level):
+- Clarification (A1–A2): ask for basic meaning or details (e.g. “무슨 뜻이에요?”, “언제예요?”).
+- Elaboration (A2–B1): ask for simple extension or reason (e.g. “왜요?”, “조금 더 말해 주세요.”).
+- Contrast/Alternative (B1–B2): ask for comparison or alternative (e.g. “반대로는 어때요?”, “다른 경우도 있어요?”).
+- Reformulation (B2+): ask for restating or summarizing (e.g. “다른 말로 말해 볼 수 있어요?”, “정리해서 말해 주세요.”).
+
+Level fairness rule: beginners must receive simple probes; advanced probes are allowed only if the learner’s own language supports them. Learners are not penalized for being probed; proficiency is inferred from how they respond, not from perfect success.
+The ceiling is identified when interactional pressure causes inability to clarify, extend, or reformulate; responses collapse into very short or vague language; fluency degrades due to linguistic strain; or the learner avoids the probe with non-responsive answers. End Phase 3 at this point.
+These interactional breakdowns take precedence over topic-based indicators when identifying the linguistic ceiling.
 
 ### KOREAN-SPECIFIC ELICITATION STRATEGIES
 
