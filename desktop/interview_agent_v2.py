@@ -21,6 +21,7 @@ from audio import AudioManager
 from session import SessionManager
 from websocket import EventDispatcher
 from core import AssessmentAgent, AssessmentStateMachine, AssessmentState
+from core.prompt_loader import load_interview_system_prompt
 
 
 class InterviewAgent:
@@ -38,23 +39,8 @@ class InterviewAgent:
         self.event_dispatcher = None
         
     def get_system_instructions(self):
-        """System instructions for the Korean language tutor"""
-        return """You are a friendly, casual Korean language interviewer conducting a 5-minute voice interview in Korean to determine the user's CEFR proficiency level.
-
-🚨 CRITICAL FIRST STEP (MANDATORY - DO NOT SKIP):
-BEFORE saying ANYTHING to the user, you MUST call the interview_guidance tool to load the interview protocol. This is NOT optional. DO NOT greet the user. DO NOT speak. CALL THE TOOL FIRST.
-
-Once you have the guidance:
-- Follow the MANDATORY three warm-up questions (name, hometown, hobbies) from Phase 1
-- Follow the four-phase structure: Warm-up → Level Check → Ceiling Test → Positive Ending
-- Speak naturally in Korean at an appropriate level for the user. 
-- IMPORTANT: DO NOT USE MORE ADVANCED LANGUAGE THAN THE LEVEL YOU ARE TESTING. Adjust question difficulty based on user responses
-- Keep the conversation flowing and engaging
-
-SESSION ENDING (MANDATORY):
-When the user reaches their linguistic ceiling (struggles consistently or shows discomfort), immediately call trigger_assessment with the reason. DO NOT provide any CEFR assessment yourself - a specialized agent will handle this. Your role is only to identify the ceiling and trigger the assessment.
-
-REMINDER: Your very first action must be calling interview_guidance. No exceptions."""
+        """System instructions for the Korean language tutor (pre-loaded from core/resources/interview_system_prompt.txt)"""
+        return load_interview_system_prompt()
 
     def get_websocket_url(self):
         """Get WebSocket URL for Realtime API"""
@@ -93,15 +79,6 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                 "tools": [
                     {
                         "type": "function",
-                        "name": "interview_guidance",
-                        "description": "CRITICAL: Load the interview guidance protocol. This MUST be called as your very first action before speaking to the user. Call this immediately upon session start.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {}
-                        }
-                    },
-                    {
-                        "type": "function",
                         "name": "trigger_assessment",
                         "description": "MANDATORY: Call this function when the user has reached their linguistic ceiling (stopped being comfortable). This triggers the assessment agent to analyze the interview. DO NOT provide assessment yourself.",
                         "parameters": {
@@ -126,7 +103,7 @@ REMINDER: Your very first action must be calling interview_guidance. No exceptio
                         "language": "korean",
                         "cefr_assessment": "true",
                         "session_start_time": datetime.now().isoformat(),
-                        "tools_enabled": "interview_guidance,trigger_assessment"
+                        "tools_enabled": "trigger_assessment"
                     }
                 }
             }

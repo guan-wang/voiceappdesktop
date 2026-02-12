@@ -1,8 +1,14 @@
 # Core Resources
 
-This directory contains shared resources used by the assessment agent.
+This directory contains shared resources used by the interview and assessment agents.
 
 ## Files
+
+### `interview_system_prompt.txt`
+**Purpose:** Canonical system prompt for the interview agent (web and desktop).
+- 3-phase WLP structure (Warm-up, Level-up, Probe)
+- Korean-specific questions and elicitation strategies
+- Loaded via `core.prompt_loader.load_interview_system_prompt()`
 
 ### `system_prompt.txt`
 **Purpose:** Complete system prompt for the assessment agent, including:
@@ -17,9 +23,6 @@ This directory contains shared resources used by the assessment agent.
 **Editing:** You can directly edit this file to modify the assessment protocol or instructions. Changes will take effect after server restart.
 
 **Capacity:** Current usage is only 1% of OpenAI's context window. You can safely expand this file by 2-10x without performance issues.
-
-### `interview_guide.txt`
-**Purpose:** Interview guidance protocol for the interview agent.
 
 ---
 

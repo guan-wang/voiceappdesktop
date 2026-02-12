@@ -3,7 +3,6 @@
 import json
 from typing import Dict, Any
 from .base_handler import BaseEventHandler
-from tools.interview_guidance import get_interview_guidance
 
 
 class FunctionEventHandler(BaseEventHandler):
@@ -57,19 +56,10 @@ class FunctionEventHandler(BaseEventHandler):
         )
         
         # Handle specific function calls
-        if function_name == "interview_guidance":
-            await self._handle_interview_guidance(call_id, websocket, session)
-        elif function_name == "trigger_assessment":
+        if function_name == "trigger_assessment":
             await self._handle_trigger_assessment(event, call_id, websocket, assessment_state)
         else:
             print(f"🔧 [DEBUG] Function '{function_name}' called (not handled)")
-    
-    async def _handle_interview_guidance(self, call_id: str, websocket, session):
-        """Handle interview_guidance function call"""
-        guidance_text = get_interview_guidance()
-        session.guidance_loaded = True
-        await self._send_tool_output(websocket, call_id, guidance_text)
-        print("🧭 Interview guidance sent to model")
     
     async def _handle_trigger_assessment(self, event: Dict[str, Any], call_id: str, 
                                         websocket, assessment_state):
